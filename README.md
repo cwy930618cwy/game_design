@@ -50,31 +50,40 @@ git --version
 
 #### Mac 用户
 
-> macOS 通常已自带 Git，但版本可能较旧，推荐通过 Homebrew 安装最新版。
+> macOS 上的 Git 依赖 Xcode Command Line Tools，需先安装。
 
-**方式一：检查是否已安装**
-
-已更新，Mac 打开终端的方式现在包括：
-⌘ + 空格 → 输入 "Terminal" → 回车
+**方式一：安装 Xcode Command Line Tools（推荐，最快）**
 
 ```bash
-git --version
-# 若输出版本号则已安装，可跳过
-```
+# 1. 安装命令行工具（弹窗点"安装"，等待 5~10 分钟）
+xcode-select --install
 
-**方式二：通过 Homebrew 安装（推荐）**
-
-```bash
-# 1. 如果未安装 Homebrew，先安装 Homebrew
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# 2. 安装 Git
-brew install git
-
-# 3. 验证
+# 2. 验证
 git --version
 # 输出：git version 2.xx.x 即成功
 ```
+
+> 这是苹果官方开发者工具包，包含 Git。无需安装完整版 Xcode。
+
+---
+
+**方式二：通过 Homebrew 安装（想要最新版时用）**
+
+```bash
+# 1. 先确保已安装 Xcode Command Line Tools（见方式一）
+xcode-select --install
+
+# 2. 安装 Homebrew（国内网络慢可用清华镜像）
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 3. 安装 Git
+brew install git
+
+# 4. 验证
+git --version
+```
+
+> 国内镜像安装 Homebrew：将 URL 替换为 `https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/install/raw/HEAD/install.sh`
 
 **方式三：官网下载安装包**
 
