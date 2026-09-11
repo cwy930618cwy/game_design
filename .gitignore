@@ -1,0 +1,61 @@
+# 核心 Unreal Engine 生成文件和目录
+**/Binaries/
+**/Build/
+**/DerivedDataCache/
+**/Intermediate/
+**/Saved/
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+
+# 项目特定生成文件
+*.generated.h
+*.generated.cpp
+
+# 编译产物
+*.obj
+*.pch
+*.ilk
+*.meta
+*.exp
+*.lib
+*.dll
+
+# 日志和报告
+**/Saved/Logs/
+**/Saved/Crashes/
+**/Saved/Profiling/
+**/Saved/Autosaves/
+**/Saved/ScreenShots/
+**/Saved/Builds/
+
+# VS Code 特定文件
+.vscode/
+
+# JetBrains Rider 特定文件
+.idea/
+*.idea
+*.iws
+*.iml
+*.ipr
+
+# Rider 缓存和用户特定设置
+# 注意：.rider/ 包含用户个人工作区设置，通常应该忽略
+.rider/
+*.dotCover
+*.shelf
+
+# 可选：如果你不希望提交预编译的着色器或本地化数据
+# **/Content/DerivedData/
+# **/Localization/*/**.archive
+
+# 平台特定文件 (示例)
+# **/Plugins/**/Binaries/
+# **/Plugins/**/Intermediate/
+
+# 确保提交 .uproject 文件
+!.gitignore
+!*.uproject
