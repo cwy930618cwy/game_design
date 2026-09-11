@@ -54,6 +54,9 @@ git --version
 
 **方式一：检查是否已安装**
 
+已更新，Mac 打开终端的方式现在包括：
+⌘ + 空格 → 输入 "Terminal" → 回车
+
 ```bash
 git --version
 # 若输出版本号则已安装，可跳过
@@ -79,13 +82,15 @@ git --version
 2. 下载对应版本（Intel 或 Apple Silicon）
 3. 双击 .dmg 文件，按提示安装
 
-**Mac 终端说明：**
+**Mac 打开终端方式：**
 
-| 终端 | 说明 |
+| 方式 | 操作 |
 |------|------|
-| Terminal（默认） | macOS 自带终端，安装 Git 后直接使用即可 |
+| Spotlight 搜索（最快） | 按 `⌘ + 空格`，输入 "Terminal" 或 "终端"，回车 |
+| Launchpad | 打开 Launchpad → 其他 → 终端 |
+| Finder 路径 | 应用程序 → 实用工具 → 终端.app |
 | iTerm2（推荐） | 更好用的第三方终端，支持分屏/搜索/快捷键 |
-| VS Code 内置终端 | 编辑器内 `` Ctrl+` `` 打开，方便快捷 |
+| VS Code 内置终端 | 编辑器内 `` ⌃ + ` `` 打开，方便快捷 |
 
 ---
 
