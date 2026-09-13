@@ -35,6 +35,9 @@
 # VS Code 特定文件
 .vscode/
 
+# Visual Studio 特定文件
+.vs/
+
 # JetBrains Rider 特定文件
 .idea/
 *.idea
@@ -51,6 +54,10 @@
 # 可选：如果你不希望提交预编译的着色器或本地化数据
 # **/Content/DerivedData/
 # **/Localization/*/**.archive
+
+# LyraStarterGame 示例工程：美术资产体积过大（约 1.8GB），不入库
+# 需要时从 Epic Launcher 重新下载 Lyra 示例即可
+/code/LyraStarterGame
 
 # 平台特定文件 (示例)
 # **/Plugins/**/Binaries/
