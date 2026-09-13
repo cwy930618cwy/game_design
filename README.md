@@ -1,5 +1,6 @@
 # 天下第一武斗会
 
+> **工程名**：Tenkaichi  
 > **类型**：Steam 单机动作战斗  
 > **引擎**：Unreal Engine 5.6  
 > **对标**：Jump 大乱斗系列（Jump Ultimate Stars / 火影忍者：究极风暴）  
@@ -116,7 +117,7 @@ cd game_design
 game_design/
 ├── README.md                  # 项目说明（本文件）
 ├── code/                      # UE5.6 项目工程
-│   ├── code.uproject          # 项目文件（双击打开）
+│   ├── Tenkaichi.uproject     # 项目文件（双击打开）
 │   ├── Config/                # 引擎/项目配置
 │   ├── Content/               # 游戏资产（蓝图/材质/贴图等）
 │   └── Source/                # C++ 源码
@@ -163,7 +164,7 @@ design: 新增关卡设计文档
 ### 6. 首次使用 UE5.6 打开项目
 
 ```bash
-# 1. 用 UE 5.6 打开 code/code.uproject 文件
+# 1. 用 UE 5.6 打开 code/Tenkaichi.uproject 文件
 # 2. 等待引擎编译着色器（首次较慢）
 # 3. 确认所有插件已启用（GAS / Niagara / Motion Warping）
 # 4. 打开主关卡即可开始开发
