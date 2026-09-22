@@ -81,13 +81,13 @@ Lyra 有严格的命名和结构规范，**从一开始就遵守**，否则后�
 
 | 规范 | 规则 | 示例 |
 |------|------|------|
-| 类名前缀 | 项目名 + 类型前缀 | `ALyraCharacter`、`ULyraHealthComponent` |
+| 类名前缀 | 项目名 + 类型前缀 | `ATenkaichiCharacter`、`UTenkaichiHealthComponent` |
 | 布尔变量 | `b` 开头 | `bIsDead`、`bHasWeapon` |
-| Getter 函数 | `Get{类型名}` | `GetLyraPlayerController()` |
+| Getter 函数 | `Get{类型名}` | `GetTenkaichiPlayerController()` |
 | 蓝图覆写点 | `K2_` 前缀 | `K2_ActivateAbility()` |
 | 网络回调 | `OnRep_` 前缀 | `OnRep_Health()` |
 | 输入处理 | `Input_` 前缀 | `Input_Move()` |
-| 静态查找组件 | `Find{类型}Component` | `FindHealthComponent()` |
+| 静态查找组件 | `Find{类型}Component` | `FindTenkaichiHealthComponent()` |
 | 目录结构 | 按功能分子目录 | `Character/`、`Ability/`、`Inventory/` |
 
 ---

@@ -1,29 +1,30 @@
-# 01 — 教程设计总纲（贴合你的 `code` 项目）
+# 01 — 教程设计总纲（贴合你的 `Tenkaichi` 项目）
 
-> **定位**：把 [00 教学路线](./00_教学开篇与路线.md) 的"大方向"落成**可执行的课时设计**。每一课都精确到：**在 `e:\ue5\cyra\code` 项目里建哪个文件、参考 Lyra 哪个源文件、验收标准是什么**。
+> **定位**：把 [00 教学路线](./00_教学开篇与路线.md) 的"大方向"落成**可执行的课时设计**。每一课都精确到：**在 `e:\ue5\game_design\code\Tenkaichi` 项目里建哪个文件、参考 Lyra 哪个源文件、验收标准是什么**。
 >
-> **一句话**：不是"读 Lyra"，而是"**在你自己的 `code` 工程里，用 Lyra 的写法，一课一课把游戏搭出来**"。
+> **一句话**：不是"读 Lyra"，而是"**在你自己的 `Tenkaichi` 工程里，用 Lyra 的写法，一课一课把游戏搭出来**"。
 
 ---
 
-## 一、你现在的起点（`code` 项目盘点）
+## 一、你现在的起点（`Tenkaichi` 项目盘点）
 
-已确认 `e:\ue5\cyra\code` 当前状态（**2026-09-18 已重置为干净空白工程**，逐个文件核对）：
+已确认 `e:\ue5\game_design\code\Tenkaichi` 当前状态（**2026-09-22 已重置为干净空白工程**，逐个文件核对）：
 
 | 项 | 状态 | 说明 |
 |----|------|------|
-| 引擎 | ✅ UE **5.6** | `code.uproject` → `EngineAssociation: "5.6"` |
-| 工程类型 | ✅ 空白 C++ Game 工程 | 单模块 `code`，Type = Runtime / Game |
-| GAS 依赖 | ❌ 未加 | `code.Build.cs` 只有 `Core/CoreUObject/Engine/InputCore`；`.uproject` 也未启用 GameplayAbilities 插件 |
-| 属性集 | ❌ 未建 | 无任何 AttributeSet（原 `AttributeSet/` 目录已删除） |
+| 引擎 | ✅ UE **5.6** | `Tenkaichi.uproject` → `EngineAssociation: "5.6"` |
+| 工程类型 | ✅ 空白 C++ Game 工程 | 单模块 `Tenkaichi`，Type = Runtime / Game |
+| Enhanced Input | ✅ 已加 | `Tenkaichi.Build.cs` 已包含 `EnhancedInput` 模块 |
+| GAS 依赖 | ❌ 未加 | `Tenkaichi.Build.cs` 有 `Core/CoreUObject/Engine/InputCore/EnhancedInput`；`.uproject` 仅启用 ModelingToolsEditorMode，未启用 GameplayAbilities 插件 |
+| 属性集 | ❌ 未建 | 无任何 AttributeSet |
 | ASC / Character / GameMode | ❌ 未建 | 无任何 GAS 相关类 |
 | 输入 / 相机 / 动画 | ❌ 未建 | 后续课做 |
 
-> **结论**：你现在站在**真正的"零"**——一个刚建好的空白 C++ 工程，**没有任何 GAS 痕迹**。本总纲据此排课——**第 02 课从"给工程加 GAS 依赖"这真正的第一步开始**，再建属性集、挂 ASC。
+> **结论**：你现在站在**真正的"零"**——一个刚建好的空白 C++ 工程，**没有任何 GAS 痕迹**（但 Enhanced Input 已就绪）。本总纲据此排课——**第 02 课从"给工程加 GAS 依赖"这真正的第一步开始**，再建属性集、挂 ASC。
 
 ---
 
-## 二、终态目标（我们要把 `code` 搭成什么样）
+## 二、终态目标（我们要把 `Tenkaichi` 搭成什么样）
 
 一个**最小可玩的 Lyra 风格射击游戏骨架**：
 
@@ -44,17 +45,17 @@
 ## 三、课时设计（6 阶段 · 每课可验收）
 
 > 每课统一格式：**目标 / 你要建的文件 / 参考 Lyra 源文件 / 关键概念 / 验收标准**。
-> 文件路径均相对 `e:\ue5\cyra\code\Source\`。
+> 文件路径均相对 `e:\ue5\game_design\code\Tenkaichi\Source\`。
 
 ### 阶段一：GAS 打通（让 Health 真正能被改）
 
 #### 第 02 课 · 给角色挂上 ASC + 属性集 ⭐（你的下一课）
-- **目标**：一个能 Spawn 的角色，身上有 ASC + `UCodeAttributeSet`，能读出初始血量。
+- **目标**：一个能 Spawn 的角色，身上有 ASC + `UTenkaichiAttributeSet`，能读出初始血量。
 - **你要建的文件 / 改动**：
-  - **第 0 步（真正的第一步）**：给工程加 GAS 依赖——`code.Build.cs` 加 `GameplayAbilities`/`GameplayTags`/`GameplayTasks` 三个模块，`.uproject` 启用 GameplayAbilities 插件（否则编译找不到模块）。
-  - `AttributeSet/CodeAttributeSet.h/.cpp`（继承 `UAttributeSet`，建 `Health` 属性）
-  - `AbilitySystem/CodeAbilitySystemComponent.h/.cpp`（继承 `UAbilitySystemComponent`）
-  - `Character/CodeCharacter.h/.cpp`（继承 `ACharacter`，先不继承 Lyra）
+  - **第 0 步（真正的第一步）**：给工程加 GAS 依赖——`Tenkaichi.Build.cs` 加 `GameplayAbilities`/`GameplayTags`/`GameplayTasks` 三个模块，`.uproject` 启用 GameplayAbilities 插件（否则编译找不到模块）。
+  - `AttributeSet/TenkaichiAttributeSet.h/.cpp`（继承 `UAttributeSet`，建 `Health` 属性）
+  - `AbilitySystem/TenkaichiAbilitySystemComponent.h/.cpp`（继承 `UAbilitySystemComponent`）
+  - `Character/TenkaichiCharacter.h/.cpp`（继承 `ACharacter`，先不继承 Lyra）
   - 在角色构造里 `CreateDefaultSubobject` 挂 ASC + 属性集
 - **参考 Lyra 源文件**：
   - `Character/LyraCharacterWithAbilities.h/.cpp`（角色 + ASC 的挂法、`InitAbilityActorInfo`）
@@ -68,7 +69,7 @@
 - **你要建的文件**：
   - `AbilitySystem/Abilities/GA_DealDamage.h/.cpp`（继承 `UGameplayAbility`）
   - `AbilitySystem/Effects/GE_Damage.h`（继承 `UGameplayEffect`，配 `DamageExecution`）
-  - `AbilitySystem/Executions/CodeDamageExecution.h/.cpp`（`FGameplayEffectExecutionCalculation`，真正改 Health）
+  - `AbilitySystem/Executions/TenkaichiDamageExecution.h/.cpp`（`FGameplayEffectExecutionCalculation`，真正改 Health）
 - **参考 Lyra 源文件**：
   - `AbilitySystem/Abilities/LyraGameplayAbility.h/.cpp`（技能基类，看 `ActivateAbility` 怎么调 Super + 留 `K2_` 钩子）
   - `AbilitySystem/Effects/LyraGameplayEffect.h`（GE 基类）
@@ -84,8 +85,8 @@
 #### 第 04 课 · Enhanced Input 接入
 - **目标**：WASD 移动、鼠标转视角。
 - **你要建的文件**：
-  - `Input/CodeInputConfig.h`（`UDataAsset`，映射 InputTag→InputAction，仿 Lyra）
-  - `Input/CodeInputComponent.h/.cpp`（`ULyraInputComponent` 思路，`BindNativeAction`）
+  - `Input/TenkaichiInputConfig.h`（`UDataAsset`，映射 InputTag→InputAction，仿 Lyra）
+  - `Input/TenkaichiInputComponent.h/.cpp`（`ULyraInputComponent` 思路，`BindNativeAction`）
   - 角色上加 `SetupPlayerInputComponent` 绑定
 - **参考 Lyra 源文件**：
   - `Input/LyraInputConfig.h`（翻译官字典）
@@ -99,8 +100,8 @@
 #### 第 05 课 · 组件化重构角色
 - **目标**：把输入/相机逻辑从角色里**拆成 Component**（Lyra 的灵魂）。
 - **你要建的文件**：
-  - `Character/CodeHeroComponent.h/.cpp`（仿 `ULyraHeroComponent`，管输入+相机）
-  - `Character/CodePawnExtensionComponent.h/.cpp`（仿 `LyraPawnExtensionComponent`，协调初始化）
+  - `Character/TenkaichiHeroComponent.h/.cpp`（仿 `ULyraHeroComponent`，管输入+相机）
+  - `Character/TenkaichiPawnExtensionComponent.h/.cpp`（仿 `LyraPawnExtensionComponent`，协调初始化）
 - **参考 Lyra 源文件**：
   - `Character/LyraHeroComponent.h/.cpp`
   - `Character/LyraPawnExtensionComponent.h/.cpp`（InitState 四阶段）
@@ -110,7 +111,7 @@
 
 #### 第 06 课 · 第三人称相机
 - **目标**：标准的第三人称跟随相机 + 弹簧臂。
-- **你要建的文件**：`Camera/CodeCameraMode.h/.cpp`（仿 `ULyraCameraMode_ThirdPerson`）
+- **你要建的文件**：`Camera/TenkaichiCameraMode.h/.cpp`（仿 `ULyraCameraMode_ThirdPerson`）
 - **参考 Lyra 源文件**：`Camera/LyraCameraMode.h`、`Camera/LyraCameraMode_ThirdPerson.h/.cpp`、`Camera/LyraPlayerCameraManager.h`
 - **关键概念**：CameraMode 数据驱动、CameraManager 驱动、弹簧臂避障。
 - **验收**：角色移动时相机平滑跟随、鼠标自由转视角。
@@ -147,15 +148,15 @@
 #### 第 09 课 · 武器作为"装备"
 - **目标**：武器用 DataAsset 定义，装备到角色手上生成。
 - **你要建的文件**：
-  - `Equipment/CodeEquipmentDefinition.h`（仿 `ULyraEquipmentDefinition`，配要 Spawn 的 Actor + 授予的技能）
-  - `Equipment/CodeEquipmentManagerComponent.h/.cpp`
+  - `Equipment/TenkaichiEquipmentDefinition.h`（仿 `ULyraEquipmentDefinition`，配要 Spawn 的 Actor + 授予的技能）
+  - `Equipment/TenkaichiEquipmentManagerComponent.h/.cpp`
 - **参考 Lyra 源文件**：`Equipment/LyraEquipmentDefinition.h`、`Equipment/LyraEquipmentInstance.h`、`Equipment/LyraEquipmentManagerComponent.h/.cpp`
 - **关键概念**：Definition→Instance 模式、装备授予 GA、`ActorsToSpawn` 生成武器实体。
 - **验收**：给角色"装备"一把枪 → 手上出现枪模型 + 获得开火技能。
 
 #### 第 10 课 · 背包/物品（Fragment 组合）
 - **目标**：物品用 Fragment 组合（Lyra 的招牌模式）。
-- **你要建的文件**：`Inventory/CodeInventoryItemDefinition.h`（仿 `ULyraInventoryItemDefinition` + Fragment）
+- **你要建的文件**：`Inventory/TenkaichiInventoryItemDefinition.h`（仿 `ULyraInventoryItemDefinition` + Fragment）
 - **参考 Lyra 源文件**：`Inventory/LyraInventoryItemDefinition.h`、`Inventory/LyraInventoryItemInstance.h`、`Inventory/InventoryFragment_*.h`
 - **关键概念**：`DefaultToInstanced` + `EditInlineNew` Fragment 组合、Instance 运行时状态。
 - **验收**：一个"治疗药水"物品，由多个 Fragment 拼出（图标 + 使用效果）。
@@ -167,8 +168,8 @@
 #### 第 11 课 · HUD（血条 + 准星）
 - **目标**：屏幕左下血条 + 中心准星，数据实时刷新。
 - **你要建的文件**：
-  - `UI/CodeHUDLayout.h/.cpp`（继承 `ULyraActivatableWidget` 思路，用 CommonUI 层栈）
-  - `UI/CodeHealthBarWidget.h/.cpp`（绑定 ASC 的 Health 属性变化）
+  - `UI/TenkaichiHUDLayout.h/.cpp`（继承 `ULyraActivatableWidget` 思路，用 CommonUI 层栈）
+  - `UI/TenkaichiHealthBarWidget.h/.cpp`（绑定 ASC 的 Health 属性变化）
 - **参考 Lyra 源文件**：`UI/LyraActivatableWidget.h`、`UI/LyraHUDLayout.h/.cpp`、`UI/Basic/MaterialProgressBar.h`、`UI/Weapons/LyraReticleWidgetBase.h`
 - **关键概念**：CommonUI 层栈（`PushContentToLayer`）、属性变化委托绑定 UI、GameplayTag 分层。
 - **验收**：掉血时血条实时减少；开火时显示准星。
@@ -249,8 +250,8 @@
 
 ## 六、下一步
 
-**你的下一课 = 第 02 课（给角色挂 ASC + 属性集）**——这是你 `code` 项目当前进度正好的下一步。
+**你的下一课 = 第 02 课（给角色挂 ASC + 属性集）**——这是你 `Tenkaichi` 项目当前进度正好的下一步。
 
-告诉我"**开始第 02 课**"，我就按第四节的模板，写出完整可编译的代码 + 配置步骤 + 验收方法，直接在你的 `e:\ue5\cyra\code` 工程里落地。
+告诉我"**开始第 02 课**"，我就按第四节的模板，写出完整可编译的代码 + 配置步骤 + 验收方法，直接在你的 `e:\ue5\game_design\code\Tenkaichi` 工程里落地。
 
 > 也可以指定别的课，或让我调整路线（比如你想先做相机/先做武器）。
