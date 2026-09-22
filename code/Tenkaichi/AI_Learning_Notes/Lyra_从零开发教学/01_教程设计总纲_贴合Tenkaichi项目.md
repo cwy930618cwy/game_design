@@ -53,7 +53,8 @@
 - **目标**：一个能 Spawn 的角色，身上有 ASC + `UTenkaichiAttributeSet`，能读出初始血量。
 - **你要建的文件 / 改动**：
   - **第 0 步（真正的第一步）**：给工程加 GAS 依赖——`Tenkaichi.Build.cs` 加 `GameplayAbilities`/`GameplayTags`/`GameplayTasks` 三个模块，`.uproject` 启用 GameplayAbilities 插件（否则编译找不到模块）。
-  - `AttributeSet/TenkaichiAttributeSet.h/.cpp`（继承 `UAttributeSet`，建 `Health` 属性）
+  - `AbilitySystem/Attributes/TenkaichiAttributeSet.h/.cpp`（**基类**，对应 Lyra `LyraAttributeSet`，不含属性，只有宏+工具函数）
+  - `AbilitySystem/Attributes/TenkaichiHealthSet.h/.cpp`（**血量集**，对应 Lyra `LyraHealthSet`，继承基类，定义 `Health` 属性）
   - `AbilitySystem/TenkaichiAbilitySystemComponent.h/.cpp`（继承 `UAbilitySystemComponent`）
   - `Character/TenkaichiCharacter.h/.cpp`（继承 `ACharacter`，先不继承 Lyra）
   - 在角色构造里 `CreateDefaultSubobject` 挂 ASC + 属性集

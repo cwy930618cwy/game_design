@@ -2,14 +2,14 @@
 	"folders": [
 		{
 			"name": "Tenkaichi",
-			"path": "."
+			"path": "E:\\ue5\\game_design\\code\\Tenkaichi"
 		},
 		{
 			"name": "LyraStarterGame",
 			"path": "E:\\ue5\\LyraStarterGame5.6\\LyraStarterGame"
 		},
 		{
-			"name": "UE5.6 引擎",
+			"name": "UE5",
 			"path": "D:\\ue5\\Epic Games\\UE_5.6"
 		}
 	],
