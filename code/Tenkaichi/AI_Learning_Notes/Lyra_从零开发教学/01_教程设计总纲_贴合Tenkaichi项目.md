@@ -56,7 +56,7 @@
   - `AbilitySystem/Attributes/TenkaichiAttributeSet.h/.cpp`（**基类**，对应 Lyra `LyraAttributeSet`，不含属性，只有宏+工具函数）
   - `AbilitySystem/Attributes/TenkaichiHealthSet.h/.cpp`（**血量集**，对应 Lyra `LyraHealthSet`，继承基类，定义 `Health` 属性）
   - `AbilitySystem/TenkaichiAbilitySystemComponent.h/.cpp`（继承 `UAbilitySystemComponent`）
-  - `Character/TenkaichiCharacter.h/.cpp`（继承 `ACharacter`，先不继承 Lyra）
+  - `Character/TenkaichiCharacterWithAbilities.h/.cpp`（继承 `ACharacter` + 实现 `IAbilitySystemInterface`，一比一对应 Lyra 的 `LyraCharacterWithAbilities`）
   - 在角色构造里 `CreateDefaultSubobject` 挂 ASC + 属性集
 - **参考 Lyra 源文件**：
   - `Character/LyraCharacterWithAbilities.h/.cpp`（角色 + ASC 的挂法、`InitAbilityActorInfo`）
@@ -65,7 +65,25 @@
 - **关键概念**：GAS 依赖怎么加、ASC 挂在哪（角色 or PlayerState）、`InitAbilityActorInfo`、属性初始化（`InitHealth`）。
 - **验收**：PIE 里 Spawn 角色，`GetHealth()` 返回你设的初值（如 100）。
 
-#### 第 03 课 · 第一个技能：一次伤害
+#### 第 03 课 · 人物打通（把角色变成"自己的、能控制的角色"）⭐（你的下一课）
+> **本课是 2026-09-24 新增**：把原第 04 课（Enhanced Input）、第 05 课（组件化）的核心按**甲方案（完整 Lyra 一步到位）**提前合并进来——先让角色被 Possess、能移动转视角，再回头学技能。原"第一个技能"顺延为第 04 课。
+
+- **目标**：角色被玩家 Possess，WASD 移动、鼠标转视角，成为"自己的角色"。
+- **你要建的文件 / 改动**（拆 4 一小步，每步对应 Lyra 真实文件）：
+  - **03-1**：`GameModes/TenkaichiGameMode.h/.cpp`——继承**引擎原生 `AGameMode`**，构造函数设 `DefaultPawnClass = ATenkaichiCharacterWithAbilities::StaticClass()`。
+    > ⚠️ **减法说明**：Lyra 的 `ALyraGameMode` 继承 `AModularGameModeBase` 且绑死 Experience/GameFeature 体系（那是第 11 课内容）。阶段一先用原生 `AGameMode` 聚焦"Possess + 默认角色"，Experience/GameFeature 完整留给第 11 课。
+  - **03-2**：输入基础设施——`Input/TenkaichiInputConfig.h`（DataAsset，InputAction→GameplayTag 映射）+ GameplayTags（`InputTag.Move`/`InputTag.Look`）+ InputAction 资产 + `Input/TenkaichiInputComponent.h/.cpp`（`BindNativeAction` 模板绑定）。
+  - **03-3**：`Character/TenkaichiPawnExtensionComponent.h/.cpp`——仿 `LyraPawnExtensionComponent`，用 InitState 四阶段协调组件初始化顺序。
+  - **03-4**：`Character/TenkaichiHeroComponent.h/.cpp`——仿 `LyraHeroComponent`，绑 Move/Look（`AddMovementInput` + 转视角），角色真正"活"了。
+- **参考 Lyra 源文件**：
+  - `GameModes/LyraGameMode.cpp`（`DefaultPawnClass`、`GetDefaultPawnClassForController`）
+  - `Input/LyraInputConfig.h`（翻译官字典）、`Input/LyraInputComponent.h/.cpp`（`BindNativeAction`）
+  - `Character/LyraPawnExtensionComponent.h/.cpp`（InitState 四阶段）
+  - `Character/LyraHeroComponent.cpp`（`InitializePlayerInput` / `Input_Move` / `Input_LookMouse`）
+- **关键概念**：GameMode 决定默认 Pawn + Possess、Enhanced Input 的 InputAction→Tag 映射、InitState（Spawned→DataAvailable→DataInitialized→GameplayReady）、组件化输入绑定。
+- **验收**：PIE 里角色被附身、WASD 能移动、鼠标能转视角。
+
+#### 第 04 课 · 第一个技能：一次伤害
 - **目标**：按一个键，对目标造成一次伤害，血量下降。
 - **你要建的文件**：
   - `AbilitySystem/Abilities/GA_DealDamage.h/.cpp`（继承 `UGameplayAbility`）
