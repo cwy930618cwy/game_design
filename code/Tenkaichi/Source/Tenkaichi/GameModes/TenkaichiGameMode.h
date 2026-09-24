@@ -5,6 +5,7 @@
 
 class APawn;
 class AController;
+class UUserWidget;
 
 UCLASS()
 class ATenkaichiGameMode : public AGameMode
@@ -12,6 +13,13 @@ class ATenkaichiGameMode : public AGameMode
 	GENERATED_BODY()
 
 public:
-	// 一比一还原 Lyra 的构造函数签名（去掉插件专用的 UE_API 导出宏）
 	ATenkaichiGameMode(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+protected:
+	// 游戏开始时，创建并显示主菜单 Widget
+	virtual void BeginPlay() override;
+
+	// 主菜单 Widget 类（编辑器里指定为 WBP_MainMenu）
+	UPROPERTY(EditAnywhere, Category = "Tenkaichi|UI")
+	TSubclassOf<UUserWidget> MenuWidgetClass;
 };
