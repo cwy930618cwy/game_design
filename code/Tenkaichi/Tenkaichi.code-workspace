@@ -7,6 +7,10 @@
 		{
 			"name": "UE5",
 			"path": "D:\\ue5\\Epic Games\\UE_5.6"
+		},
+		{
+			"name": "Lyra",
+			"path": "E:\\ue5\\LyraStarterGame5.6\\LyraStarterGame"
 		}
 	],
 	"settings": {
