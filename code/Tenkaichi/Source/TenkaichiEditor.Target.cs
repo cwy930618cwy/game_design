@@ -10,6 +10,6 @@ public class TenkaichiEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_6;
-		ExtraModuleNames.Add("Tenkaichi");
+		ExtraModuleNames.Add("TenkaichiGame");
 	}
 }

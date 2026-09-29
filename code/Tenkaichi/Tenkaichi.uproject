@@ -5,8 +5,17 @@
 	"Description": "",
 	"Modules": [
 		{
-			"Name": "Tenkaichi",
+			"Name": "TenkaichiGame",
 			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"DeveloperSettings",
+				"Engine"
+			]
+		},
+		{
+			"Name": "TenkaichiEditor",
+			"Type": "Editor",
 			"LoadingPhase": "Default"
 		}
 	],
