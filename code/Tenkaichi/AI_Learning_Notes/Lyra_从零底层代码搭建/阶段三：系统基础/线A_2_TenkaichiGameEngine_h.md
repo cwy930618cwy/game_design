@@ -1,0 +1,118 @@
+# 线A-2 TenkaichiGameEngine —— 教 `.h`
+
+> **定位**：阶段三线 A-2 的第 2 步——还原 `TenkaichiGameEngine.h`（**.h 声明部分**）。
+> 源码依据：`E:\ue5\LyraStarterGame5.6\LyraStarterGame\Source\LyraGame\System\LyraGameEngine.h`（25 行）
+> 命名：`ULyraGameEngine` → **`UTenkaichiGameEngine`**；文件 `LyraGameEngine.h` → **`TenkaichiGameEngine.h`**（只换前缀）。
+> 路径：放到你工程的 `Source\TenkaichiGame\System\TenkaichiGameEngine.h`（对应 Lyra 的 `System\` 目录）。
+
+---
+
+## 一、先讲清楚它是什么（为什么这么写）
+
+`.h` 非常短，就一个类 + 一个重写方法。核心就是：
+
+```cpp
+class UTenkaichiGameEngine : public UGameEngine
+```
+
+**它继承引擎的 `UGameEngine`**（引擎运行时类）。为什么要继承？
+- UE 启动时创建"引擎对象"，默认是引擎自带的 `UGameEngine`。
+- 游戏想**在引擎启动的时机插自己的代码**，就得继承它、重写 `Init()`。
+- 前面总 md 已讲过：建了这个类后，还必须靠 `DefaultEngine.ini` 的 `GameEngine=` 配置告诉 UE"用这个类当引擎"（你已经配好了 ✅）。
+
+> 一句话：**这个类是个"引擎替换入口"，重写 `Init()` 留钩子，以后想加启动逻辑就加在这里。**
+
+---
+
+## 二、整份 `.h` 一比一还原（照着写）
+
+> **注释中文化**（铁律 21/28）：注释已翻成中文；代码本体（类名/类型/宏）与 Lyra 原样一字不差（只换前缀）。
+
+```cpp
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+// 引擎类头文件：提供 UGameEngine 基类
+#include "Engine/GameEngine.h"
+
+// 生成头文件（UHT 用，放最后）
+#include "TenkaichiGameEngine.generated.h"
+
+class IEngineLoop;
+class UObject;
+
+
+UCLASS()
+class UTenkaichiGameEngine : public UGameEngine
+{
+	GENERATED_BODY()
+
+public:
+
+	// 构造函数（带默认参数，可传入 FObjectInitializer）
+	UTenkaichiGameEngine(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+protected:
+
+	// 重写引擎初始化钩子：引擎启动时被调用，可在这里插自定义逻辑
+	virtual void Init(IEngineLoop* InEngineLoop) override;
+};
+```
+
+---
+
+## 三、逐段讲解（每一段是干嘛的）
+
+### 段 1：头文件 + 前置声明（1~10 行）
+```cpp
+#include "Engine/GameEngine.h"
+#include "TenkaichiGameEngine.generated.h"
+class IEngineLoop;
+class UObject;
+```
+- `Engine/GameEngine.h`：`UGameEngine` 基类所在头文件。
+- `TenkaichiGameEngine.generated.h`：UHT 自动生成，放最后。
+- `IEngineLoop`、`UObject`：前置声明（用到了但不用展开，加快编译）。
+
+### 段 2：类声明（13~25 行）
+```cpp
+UCLASS()
+class UTenkaichiGameEngine : public UGameEngine
+{
+	GENERATED_BODY()
+	...
+};
+```
+- `UCLASS()`：UE 反射类。
+- `: public UGameEngine`：继承引擎运行时引擎类。
+- `GENERATED_BODY()`：UHT 宏，必须写。
+
+### 段 3：构造函数（20 行）
+```cpp
+UTenkaichiGameEngine(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+```
+- 带默认参数 `FObjectInitializer::Get()`，所以可以 `new UTenkaichiGameEngine()` 不带参数创建。
+- `FObjectInitializer` 是 UE 对象初始化的工具，构造时传给父类。
+
+### 段 4：重写 `Init`（24 行）
+```cpp
+virtual void Init(IEngineLoop* InEngineLoop) override;
+```
+- `Init(IEngineLoop*)` 是 `UGameEngine` 的初始化钩子，引擎启动时被调用。
+- `override`：确认是重写父类虚函数。
+- 声明后要在 `.cpp` 里实现。
+
+---
+
+## 四、写完后自查（铁律 11/12 两个核对）
+
+1. **缺行核对**：`构造函数 + Init 声明 + GENERATED_BODY + UCLASS` 一个都不能少。
+2. **声明成对**：`.h` 里声明了构造函数和 `Init()`——**都要在 `.cpp` 里实现**（下一步教）。
+3. **命名核对**：`TenkaichiGameEngine`（前缀已换），别写成 `GameEngine` 或 `LyraGameEngine`。
+
+---
+
+## 五、确认点
+
+按铁律 29，你写完 `.h` 后说"下一步"，**我会先读你工程里的 `TenkaichiGameEngine.h` 确认写完、内容对得上**，再教 `.cpp`（建 `_cpp.md`）。
