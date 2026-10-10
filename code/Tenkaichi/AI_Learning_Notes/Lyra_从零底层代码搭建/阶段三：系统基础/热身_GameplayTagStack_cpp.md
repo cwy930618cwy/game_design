@@ -1,6 +1,6 @@
-# 线A-1 GameplayTagStack —— 教 `.cpp`
+# 热身 GameplayTagStack —— 教 `.cpp`
 
-> **定位**：阶段三线 A-1 的第 3 步——还原 `GameplayTagStack.cpp`（**.cpp 实现部分**）。
+> **定位**：阶段三热身项的第 3 步——还原 `GameplayTagStack.cpp`（**.cpp 实现部分**）。
 > 源码依据：`E:\ue5\LyraStarterGame5.6\LyraStarterGame\Source\LyraGame\System\GameplayTagStack.cpp`（109 行）
 > 命名：文件无 `Lyra` 前缀，保持 `GameplayTagStack.cpp`。
 > 路径：放到你工程的 `Source\TenkaichiGame\System\GameplayTagStack.cpp`。
@@ -230,4 +230,4 @@ FString FGameplayTagStack::GetDebugString() const
 
 ## 六、确认点
 
-按铁律 29，你写完 `.cpp` 后说"下一步"，**我会先读你工程里的 `GameplayTagStack.cpp` 确认写完、内容对得上**，再进线 A 第 2 项（`TenkaichiGameEngine`，走同样的"总 md → h → cpp"）。
+按铁律 29，你写完 `.cpp` 后说"下一步"，**我会先读你工程里的 `GameplayTagStack.cpp` 确认写完、内容对得上**，再进 3.2（`TenkaichiGameEngine`，走同样的"总 md → h → cpp"）。

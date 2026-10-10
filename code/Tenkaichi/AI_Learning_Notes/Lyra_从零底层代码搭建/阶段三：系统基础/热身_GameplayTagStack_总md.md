@@ -1,6 +1,6 @@
-# 线A-1 GameplayTagStack —— 总 md
+# 热身 GameplayTagStack —— 总 md
 
-> **定位**：阶段三（L3 系统基础）**线 A 第 1 项**的**总入口 + 全景**。
+> **定位**：阶段三（L3 系统基础）**热身项**的**总入口 + 全景**（已在 3.x 步骤之前教完，作为 FastArray 增量复制的热身）。
 > 目标：理解并一比一还原 Lyra 的 `System\GameplayTagStack.h/.cpp`——一个"可复制的、带计数的 Tag 容器"。
 > 源码依据：`E:\ue5\LyraStarterGame5.6\LyraStarterGame\Source\LyraGame\System\GameplayTagStack.h/.cpp`
 > 命名说明：这个文件在 Lyra 里就叫 `GameplayTagStack`（**没有 `Lyra` 前缀**），类名是 `FGameplayTagStack` / `FGameplayTagStackContainer`，所以**不涉及前缀替换，保持原名**。
@@ -25,7 +25,7 @@
 ## 二、为什么放这里、为什么独立
 
 - **放 L3 系统基础**：它是被上层（角色、战斗、效果）反复使用的"数据底座"，和 GameInstance/AssetManager 一起，都属于"全局/底层数据"那一类。
-- **完全独立**：它只依赖引擎的 `GameplayTags`（Tag 类型）+ `FastArraySerializer`（网络复制工具），**不依赖阶段四/五的任何类**。所以放在线 A 第一项，现在就能编译、能讲透，适合热身。
+- **完全独立**：它只依赖引擎的 `GameplayTags`（Tag 类型）+ `FastArraySerializer`（网络复制工具），**不依赖阶段四/五的任何类**。所以放在热身项，现在就能编译、能讲透，适合热身。
 
 ---
 

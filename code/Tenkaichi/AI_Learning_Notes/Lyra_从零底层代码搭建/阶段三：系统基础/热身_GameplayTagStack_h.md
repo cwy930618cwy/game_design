@@ -1,6 +1,6 @@
-# 线A-1 GameplayTagStack —— 教 `.h`
+# 热身 GameplayTagStack —— 教 `.h`
 
-> **定位**：阶段三线 A-1 的第 2 步——还原 `GameplayTagStack.h`（**.h 声明部分**）。
+> **定位**：阶段三热身项的第 2 步——还原 `GameplayTagStack.h`（**.h 声明部分**）。
 > 源码依据：`E:\ue5\LyraStarterGame5.6\LyraStarterGame\Source\LyraGame\System\GameplayTagStack.h`（99 行）
 > 命名：这个文件在 Lyra 里就叫 `GameplayTagStack`（无 `Lyra` 前缀），类名 `FGameplayTagStack` / `FGameplayTagStackContainer`，**不涉及前缀替换**。
 > 路径：放到你工程的 `Source\TenkaichiGame\System\GameplayTagStack.h`（对应 Lyra 的 `System\` 目录）。
