@@ -8,6 +8,7 @@ DEFINE_LOG_CATEGORY(LogTenkaichiExperience);
 DEFINE_LOG_CATEGORY(LogTenkaichiAbilitySystem);
 DEFINE_LOG_CATEGORY(LogTenkaichiTeams);
 
+// 根据对象当前运行在网络中的角色（服务器/客户端），返回一个用于日志前缀的上下文字符串
 FString GetClientServerContextString(UObject* ContextObject)
 {
 	ENetRole Role = ROLE_None;

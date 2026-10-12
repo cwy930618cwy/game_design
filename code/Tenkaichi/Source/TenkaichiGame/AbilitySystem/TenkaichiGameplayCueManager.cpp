@@ -46,16 +46,19 @@ struct FGameplayCueTagThreadSynchronizeGraphTask : public FAsyncGraphTaskBase
 	ENamedThreads::Type GetDesiredThread() { return ENamedThreads::GameThread; }
 };
 
+// 构造函数：调用父类初始化
 UTenkaichiGameplayCueManager::UTenkaichiGameplayCueManager(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 }
 
+// 获取全局唯一的 GameplayCueManager 单例（从 AbilitySystemGlobals 里取并转型）
 UTenkaichiGameplayCueManager* UTenkaichiGameplayCueManager::Get()
 {
 	return Cast<UTenkaichiGameplayCueManager>(UAbilitySystemGlobals::Get().GetGameplayCueManager());
 }
 
+// 创建完成时回调：调用父类逻辑后，重新挂上延迟加载的委托监听
 void UTenkaichiGameplayCueManager::OnCreated()
 {
 	Super::OnCreated();
@@ -63,6 +66,7 @@ void UTenkaichiGameplayCueManager::OnCreated()
 	UpdateDelayLoadDelegateListeners();
 }
 
+// 当使用「延迟加载」模式时，加载那些「无论如何都要常驻」的 cue
 void UTenkaichiGameplayCueManager::LoadAlwaysLoadedCues()
 {
 	if (ShouldDelayLoadGameplayCues())
@@ -87,6 +91,7 @@ void UTenkaichiGameplayCueManager::LoadAlwaysLoadedCues()
 	}
 }
 
+// 是否应该异步加载运行时对象库（根据加载模式判断）
 bool UTenkaichiGameplayCueManager::ShouldAsyncLoadRuntimeObjectLibraries() const
 {
 	switch (TenkaichiGameplayCueManagerCvars::LoadMode)
@@ -113,6 +118,7 @@ bool UTenkaichiGameplayCueManager::ShouldSyncLoadMissingGameplayCues() const
 	return false;
 }
 
+// 缺失的 cue 是否应该异步加载（Lyra 里始终返回 true）
 bool UTenkaichiGameplayCueManager::ShouldAsyncLoadMissingGameplayCues() const
 {
 	return true;
@@ -390,6 +396,7 @@ const FPrimaryAssetType UFortAssetManager_GameplayCueRefsType = TEXT("GameplayCu
 const FName UFortAssetManager_GameplayCueRefsName = TEXT("GameplayCueReferences");
 const FName UFortAssetManager_LoadStateClient = FName(TEXT("Client"));
 
+// 刷新「单个 GameplayCue 主资产」所对应的 bundle（打包时把 cue 归组）
 void UTenkaichiGameplayCueManager::RefreshGameplayCuePrimaryAsset()
 {
 	TArray<FSoftObjectPath> CuePaths;
@@ -406,4 +413,4 @@ void UTenkaichiGameplayCueManager::RefreshGameplayCuePrimaryAsset()
 	UAssetManager::Get().AddDynamicAsset(PrimaryAssetId, FSoftObjectPath(), BundleData);
 }ndleData);
 }undleData);
-}
+}}

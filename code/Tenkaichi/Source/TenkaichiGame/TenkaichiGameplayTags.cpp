@@ -72,6 +72,7 @@ namespace TenkaichiGameplayTags
 		// 在这里填入你的自定义模式
 	};
 
+	// 按字符串查找 GameplayTag（找不到且允许时，退回部分匹配）
 	FGameplayTag FindTagByString(const FString& TagString, bool bMatchPartialString)
 	{
 		const UGameplayTagsManager& Manager = UGameplayTagsManager::Get();

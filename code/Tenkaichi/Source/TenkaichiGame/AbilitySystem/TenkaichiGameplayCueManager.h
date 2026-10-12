@@ -20,17 +20,24 @@ class UTenkaichiGameplayCueManager : public UGameplayCueManager
 	GENERATED_BODY()
 
 public:
+	// 构造函数（带默认参数，可传入 FObjectInitializer）
 	UTenkaichiGameplayCueManager(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	// 获取全局唯一的 GameplayCueManager 单例（从 AbilitySystemGlobals 里取并转型）
 	static UTenkaichiGameplayCueManager* Get();
 
 	//~UGameplayCueManager 接口（以下是重写父类的方法）
+	// 创建完成时回调：调用父类逻辑后，重新挂上延迟加载的委托监听
 	virtual void OnCreated() override;
+	// 是否应该异步加载运行时对象库（根据加载模式判断）
 	virtual bool ShouldAsyncLoadRuntimeObjectLibraries() const override;
+	// 缺失的 cue 是否应该同步加载（Lyra 里始终返回 false）
 	virtual bool ShouldSyncLoadMissingGameplayCues() const override;
+	// 缺失的 cue 是否应该异步加载（Lyra 里始终返回 true）
 	virtual bool ShouldAsyncLoadMissingGameplayCues() const override;
 	//~End of UGameplayCueManager 接口
 
+	// 控制台命令：打印当前内存中所有 GameplayCue（常驻/预加载/按需加载三类）
 	static void DumpGameplayCues(const TArray<FString>& Args);
 
 	// 当使用「延迟加载」模式时，本方法负责加载那些「无论如何都要常驻」的 cue

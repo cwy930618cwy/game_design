@@ -6,6 +6,7 @@
 
 namespace TenkaichiGameplayTags
 {
+	// 按字符串查找 GameplayTag（找不到且允许时，退回部分匹配）
 	TENKAICHIGAME_API	FGameplayTag FindTagByString(const FString& TagString, bool bMatchPartialString = false);
 
 	// 声明 Lyra 要用的所有自定义原生标签（Tag）
