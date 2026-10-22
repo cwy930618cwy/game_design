@@ -81,10 +81,11 @@ P04 Camera
 
 - ✅ **本总 md**（P04.0）：概念 + 全景 + 依赖（零挂起）。
 - ✅ **P04.1**：`LyraCameraAssistInterface` 已教完（重构版1 4.8.0，工程 `TenkaichiCameraAssistInterface.h` 已落盘，被 PlayerController 引用）——**直接沿用，不重教**。
-- ⬜ **P04.2**：`LyraCameraMode`（含 CameraModeStack）→ 停 → `.h` → 停 → `.cpp`；再 `LyraCameraMode_ThirdPerson` → 停 → `.h` → 停 → `.cpp`；再 `LyraCameraComponent` → 停 → `.h` → 停 → `.cpp`。
-- ⬜ **P04.3**：`LyraPenetrationAvoidanceFeeler`（纯结构体，只有 `.h`）；再 `LyraPlayerCameraManager` → 停 → `.h` → 停 → `.cpp`；再 `LyraUICameraManagerComponent` → 停 → `.h` → 停 → `.cpp`。
+- ✅ **P04.2**：`LyraCameraMode`（含 CameraModeStack）+ `LyraCameraMode_ThirdPerson` + `LyraCameraComponent` 三个类全部教完（各建总md→h→cpp，共 9 个 md），工程 `TenkaichiCameraMode.h/.cpp`、`TenkaichiCameraMode_ThirdPerson.h/.cpp`、`TenkaichiCameraComponent.h/.cpp` 已全部落盘。**P04.2 全清**。
+- ✅ **P04.3**：`LyraPenetrationAvoidanceFeeler`（纯结构体，只有 `.h`，P04.3-1）、`LyraPlayerCameraManager`（P04.3-2）、`LyraUICameraManagerComponent`（P04.3-3）三个类全部教完（各建总md→h→cpp，共 9 个 md），工程 `TenkaichiPenetrationAvoidanceFeeler.h`、`TenkaichiPlayerCameraManager.h/.cpp`、`TenkaichiUICameraManagerComponent.h/.cpp` 已全部落盘。**P04.3 全清 → P04 Camera 文件夹 12 文件全部教完，整体编译闭环**。
 
 > 每个独立类都按铁律 35 先建它自己的总 md → 停 → 教 `.h` → 停 → 教 `.cpp`。P04 无挂起，所有 `.h`/`.cpp` 当场完整落盘。
+> **P04.3 死结**（PlayerCameraManager ↔ UICameraManagerComponent 互相 include）：两个 `.cpp` 都落盘后死结闭环，P04 相机文件夹整体编译通过（铁律 31 + 死结处理铁律）。
 
 ---
 
@@ -101,7 +102,7 @@ P04 Camera
 
 1. P04 Camera 总 md 看懂了：Lyra 用「相机模式栈 + 第三人称模式 + 防穿墙探针」搭了一套可配置/可混合/可防穿模的第三人称相机系统；**全文件夹可独立编译、零挂起**（不依赖 GAS 等后期内容）。
 2. **P04.1 `CameraAssistInterface` 已教完**（重构版1 4.8.0，工程已落盘）——直接沿用，不重教，OK 吗？
-3. 确认后我按 **P04.2 先教 `LyraCameraMode`**（含 CameraModeStack，相机系统地基）。
+3. **P04 已全部教完**（P04.1~P04.3 共 8 个类/结构，12 个文件全落盘，整体编译闭环）。下一步进入 **P05 AbilitySystem（GAS 核心）**。
 
 ---
 
