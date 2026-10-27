@@ -21,4 +21,4 @@
 #define Tenkaichi_TraceChannel_Weapon_Multi				ECC_GameTraceChannel4
 
 // 这条通道（ECC_GameTraceChannel5）由 ShooterCore 游戏功能插件分配给了瞄准辅助（Aim Assist）。
-// ECC_GameTraceChannel5
+// 留给瞄准辅助使用

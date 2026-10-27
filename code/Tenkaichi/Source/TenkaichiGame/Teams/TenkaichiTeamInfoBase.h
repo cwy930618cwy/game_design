@@ -26,12 +26,12 @@ public:
 	// 获取这支队伍的队号
 	int32 GetTeamId() const { return TeamId; }
 
-	//~AActor interface
+	//~AActor 接口开始
 	// 游戏开始时，尝试把自己的队伍信息注册到队伍子系统
 	virtual void BeginPlay() override;
 	// 结束时，若已注册则从队伍子系统注销
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	//~End of AActor interface
+	//~AActor 接口结束
 
 protected:
 	// 把"这支队伍"注册到指定的队伍子系统（由派生类可覆写的行为）

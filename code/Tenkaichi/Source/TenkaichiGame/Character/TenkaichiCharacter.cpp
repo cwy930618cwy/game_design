@@ -14,10 +14,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Player/TenkaichiPlayerController.h"
 #include "Player/TenkaichiPlayerState.h"
-#include "System/TenkaichiSignificanceManager.h"
+// #include "System/TenkaichiSignificanceManager.h"   // ⚠️ P14 未就位（挂起 ㉙，见 BeginPlay/EndPlay）
 #include "TimerManager.h"
-
-#if 0
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(TenkaichiCharacter)
 
@@ -109,6 +107,7 @@ void ATenkaichiCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+#if 0   // ⚠️ 挂起 ㉙：依赖 P14 UTenkaichiSignificanceManager
 	UWorld* World = GetWorld();
 
 	// 专用服务器不注册（不需要"重要度管理"）
@@ -120,6 +119,7 @@ void ATenkaichiCharacter::BeginPlay()
 			//@TODO: SignificanceManager->RegisterObject(this, (EFortSignificanceType)SignificanceType);
 		}
 	}
+#endif
 }
 
 // 角色结束播放：从 SignificanceManager 注销
@@ -127,6 +127,7 @@ void ATenkaichiCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
+#if 0   // ⚠️ 挂起 ㉙：依赖 P14 UTenkaichiSignificanceManager
 	UWorld* World = GetWorld();
 
 	// 专用服务器没注册过，也不用注销
@@ -138,6 +139,7 @@ void ATenkaichiCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 			SignificanceManager->UnregisterObject(this);
 		}
 	}
+#endif
 }
 
 // 重置角色：关移动碰撞 → 蓝图钩子 → 反初始化并销毁
@@ -519,7 +521,7 @@ void ATenkaichiCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHe
 // 能否跳跃：和 ACharacter 一样，但去掉蹲伏检查（蹲着也能跳）
 bool ATenkaichiCharacter::CanJumpInternal_Implementation() const
 {
-	// same as ACharacter's implementation but without the crouch check
+	// 与 ACharacter 的实现相同，但不做蹲伏检查
 	return JumpIsAllowedInternal();
 }
 
@@ -749,4 +751,3 @@ bool FTenkaichiSharedRepMovement::NetSerialize(FArchive& Ar, class UPackageMap* 
 	return true;
 }
 
-#endif

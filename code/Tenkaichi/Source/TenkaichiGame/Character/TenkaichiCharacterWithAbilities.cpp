@@ -1,5 +1,3 @@
-#if 0
-// ===== 以下整段依赖 GAS 断点类，暂注释挂起（铁律 33/35）=====
 
 #include "TenkaichiCharacterWithAbilities.h"
 
@@ -43,5 +41,3 @@ UAbilitySystemComponent* ATenkaichiCharacterWithAbilities::GetAbilitySystemCompo
 	return AbilitySystemComponent;
 }
 
-#endif
-// ===== 挂起结束 =====

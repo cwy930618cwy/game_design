@@ -1,7 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#if 0	// ⚠️ 挂起：依赖 UTenkaichiAbilitySystemComponent（GAS 断点），GAS 核心就位后放开
-
 #include "Character/TenkaichiPawnExtensionComponent.h"
 
 #include "AbilitySystem/TenkaichiAbilitySystemComponent.h"
@@ -11,7 +9,7 @@
 #include "GameFramework/Pawn.h"
 #include "TenkaichiGameplayTags.h"
 #include "TenkaichiLogChannels.h"
-#include "TenkaichiPawnData.h"
+#include "Character/TenkaichiPawnData.h"
 #include "Net/UnrealNetwork.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(TenkaichiPawnExtensionComponent)
@@ -80,7 +78,7 @@ void UTenkaichiPawnExtensionComponent::EndPlay(const EEndPlayReason::Type EndPla
 
 	Super::EndPlay(EndPlayReason);
 }
-```// 设置角色数据：仅权威端能设，已有数据则报错，设完推进初始化
+// 设置角色数据：仅权威端能设，已有数据则报错，设完推进初始化
 void UTenkaichiPawnExtensionComponent::SetPawnData(const UTenkaichiPawnData* InPawnData)
 {
 	check(InPawnData);
@@ -192,7 +190,7 @@ void UTenkaichiPawnExtensionComponent::UninitializeAbilitySystem()
 
 	AbilitySystemComponent = nullptr;
 }
-```// 控制器改变时：刷新能力系统信息，再推进初始化
+// 控制器改变时：刷新能力系统信息，再推进初始化
 void UTenkaichiPawnExtensionComponent::HandleControllerChanged()
 {
 	if (AbilitySystemComponent && (AbilitySystemComponent->GetAvatarActor() == GetPawnChecked<APawn>()))
@@ -329,4 +327,3 @@ void UTenkaichiPawnExtensionComponent::OnAbilitySystemUninitialized_Register(FSi
 	}
 }
 
-#endif	// ⚠️ GAS 核心（UTenkaichiAbilitySystemComponent）就位后放开

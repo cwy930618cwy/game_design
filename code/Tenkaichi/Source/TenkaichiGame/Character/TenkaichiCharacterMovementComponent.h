@@ -66,12 +66,12 @@ public:
 	/** 记录一份"要复制给模拟端"的加速度 */
 	TENKAICHIGAME_API void SetReplicatedAcceleration(const FVector& InAcceleration);
 
-	//~UMovementComponent interface
+	//~UMovementComponent 接口开始
 	/** 覆盖"转身角速度"：挂了"移动停止"tag 就转不动（返回 0） */
 	TENKAICHIGAME_API virtual FRotator GetDeltaRotation(float DeltaTime) const override;
 	/** 覆盖"最大速度"：挂了"移动停止"tag 就跑不动（返回 0） */
 	TENKAICHIGAME_API virtual float GetMaxSpeed() const override;
-	//~End of UMovementComponent interface
+	//~UMovementComponent 接口结束
 
 protected:
 

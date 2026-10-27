@@ -42,7 +42,7 @@ P03 Input
 | 文件 | `.h` 依赖 | `.cpp` 依赖 | 状态 |
 |------|-----------|------------|------|
 | `LyraInputConfig` | 引擎（InputAction/InputTag） | 引擎 | ✅ P03.1 已教 |
-| `LyraInputComponent` | 引擎（EnhancedInputComponent） | 引擎 | ✅ P03.1 已教 |
+| `LyraInputComponent` | 引擎（EnhancedInputComponent）+ `LyraInputConfig` | 引擎 + `LyraLocalPlayer`(已落盘✅) + `LyraSettingsLocal`(P18⚠️冗余include) | ✅ P03.1-2 已教（2026-10-27 补齐，`.cpp` 仅 1 行 include 挂起登记㉚） |
 | `LyraInputModifiers` | 引擎（InputModifiers） | `LyraAimSensitivityData`(本阶段✅) + `LyraLocalPlayer`(P12⚠️) + `LyraSettingsShared`(P18⚠️) | 🟡 `.cpp` 依赖 P12/P18 挂起 |
 | `LyraAimSensitivityData` | 引擎（DataAsset）+ 前置声明枚举 `ELyraGamepadSensitivity` | `LyraSettingsShared`(P18⚠️) | 🟡 `.h` 可独立编译（前置声明枚举不阻塞编译）；`.cpp` 构造函数体 + 查询函数体 + include 挂起（登记注释备忘录 ⑰） |
 | `LyraPlayerInput` | 引擎（EnhancedPlayerInput） | `LatencyMarkerModule`(引擎✅) + `LyraSettingsLocal`(P18⚠️) | 🟡 `.cpp` 依赖 P18 挂起 |
@@ -83,7 +83,8 @@ P03 Input
 ## 四、教学节奏（铁律 29/35）
 
 - ✅ **本总 md**（P03.0）：概念 + 全景 + 依赖。
-- ✅ **P03.1**：`InputConfig` 已从重构版1 迁移确认（`P03.1_TenkaichiInputConfig_总md/_h/_cpp` 三件套，工程已落盘）。`InputComponent` 待补。
+- ✅ **P03.1**：`InputConfig` 已从重构版1 迁移确认（`P03.1_TenkaichiInputConfig_总md/_h/_cpp` 三件套，工程已落盘）。
+- ✅ **P03.1-2**：`InputComponent` 已教完（2026-10-27 补齐 P03 最后缺口：`P03.1-2_TenkaichiInputComponent_总md/_h/_cpp` 三件套；工程 `TenkaichiInputComponent.h` 已落盘核对通过，`.cpp` 待落盘；`.h` 零挂起，`.cpp` 仅 `Settings/TenkaichiSettingsLocal.h` include 挂起登记㉚待 P18）→ **P03 Input 14/14 全清**。
 - ✅ **P03.2**：`LyraAimSensitivityData` 已教完（`P03.2-1_..._总md/_h/_cpp`，`.cpp` 挂起 P18 登记⑰）；`LyraInputModifiers` 已教完（`P03.2-2_..._总md/_h/_cpp` 三件套，工程 `TenkaichiInputModifiers.h/.cpp` 已落盘，`.cpp` 挂起 P12+P18 登记⑱）。**P03.2 全清**。
 - ✅ **P03.3**：`LyraPlayerInput` / `LyraPlayerMappableKeyProfile` / `LyraInputUserSettings` 已教完（`P03.3_Input类_总md/_h/_cpp` 三件套，工程三个文件 h+cpp 已落盘；`PlayerInput.cpp` 挂起 P18 登记⑲，另两个空壳类不挂起）。**P03 Input 文件夹全清**。
 

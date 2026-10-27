@@ -2,7 +2,7 @@
 
 #include "TenkaichiAimSensitivityData.h"
 
-#include "Settings/TenkaichiSettingsShared.h"
+// #include "Settings/TenkaichiSettingsShared.h"   // ⚠️【注释挂起】P18 Settings 未就位，工程无此文件 → 编译不过（见注释备忘录 ⑰）
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(TenkaichiAimSensitivityData)
 

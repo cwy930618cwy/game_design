@@ -55,10 +55,10 @@ public:
 
 public:
 
-	//~UObject interface
+	//~UObject 接口开始
 #if WITH_EDITOR
 	// 编辑器里改了属性时调用：通知队伍子系统刷新（依赖 TeamSubsystem，阶段五解挂）
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
-	//~End of UObject interface
+	//~UObject 接口结束
 };

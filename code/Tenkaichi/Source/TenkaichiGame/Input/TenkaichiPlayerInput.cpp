@@ -2,7 +2,7 @@
 
 #include "TenkaichiPlayerInput.h"
 #include "Performance/LatencyMarkerModule.h"
-#include "Settings/TenkaichiSettingsLocal.h"
+// #include "Settings/TenkaichiSettingsLocal.h"   // ⚠️【注释挂起】P18 Settings 未就位，工程无此文件 → 编译不过（见注释备忘录 ⑲）
 
 #if 0 // 依赖 P18 TenkaichiSettingsLocal，暂挂起，就位后解开（见注释备忘录 ⑲）
 

@@ -64,13 +64,13 @@ public:
 	/** 本组件所实现特性的名字 */
 	static UE_API const FName NAME_ActorFeatureName;
 
-	//~ Begin IGameFrameworkInitStateInterface interface
+	//~IGameFrameworkInitStateInterface 接口开始
 	virtual FName GetFeatureName() const override { return NAME_ActorFeatureName; }
 	UE_API virtual bool CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const override;
 	UE_API virtual void HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) override;
 	UE_API virtual void OnActorInitStateChanged(const FActorInitStateChangedParams& Params) override;
 	UE_API virtual void CheckDefaultInitialization() override;
-	//~ End IGameFrameworkInitStateInterface interface
+	//~IGameFrameworkInitStateInterface 接口结束
 
 protected:
 

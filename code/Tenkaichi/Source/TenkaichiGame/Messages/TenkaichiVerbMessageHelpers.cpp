@@ -70,8 +70,6 @@ APlayerController* UTenkaichiVerbMessageHelpers::GetPlayerControllerFromObject(U
 	return nullptr;
 }
 
-// ⚠️ 以下两段依赖 GAS 的 FGameplayCueParameters，GAS 核心（P05）就位后把 #if 0 改成 #if 1 或删除即可解开
-#if 0
 // 把一条 VerbMessage 转换成 GameplayCue 参数（消息 → GAS）
 FGameplayCueParameters UTenkaichiVerbMessageHelpers::VerbMessageToCueParameters(const FTenkaichiVerbMessage& Message)
 {
@@ -98,6 +96,12 @@ FTenkaichiVerbMessage UTenkaichiVerbMessageHelpers::CueParametersToVerbMessage(c
 	Result.Target = Params.EffectCauser.Get();
 	Result.InstigatorTags = Params.AggregatedSourceTags;
 	Result.TargetTags = Params.AggregatedTargetTags;
+	//@TODO: Result.ContextTags = ???;
+	Result.Magnitude = Params.RawMagnitude;
+
+	return Result;
+}
+#endif = Params.AggregatedTargetTags;
 	//@TODO: Result.ContextTags = ???;
 	Result.Magnitude = Params.RawMagnitude;
 
