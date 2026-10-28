@@ -1,7 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#if 0	// ⚠️ 挂起：依赖 TeamSubsystem.cpp（也挂起），4.6 GAS 核心放开 TeamSubsystem 后一起放开
-
 #include "TenkaichiTeamStatics.h"
 
 #include "Engine/Engine.h"
@@ -100,4 +98,3 @@ UTexture* UTenkaichiTeamStatics::GetTeamTextureWithFallback(UTenkaichiTeamDispla
 	return DefaultValue;
 }
 
-#endif	// ⚠️ 4.6 GAS 核心放开 TeamSubsystem.cpp 后放开

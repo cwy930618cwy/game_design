@@ -8,7 +8,6 @@
 #include "TenkaichiLogChannels.h"
 #include "Teams/TenkaichiTeamSubsystem.h"
 
-// ✅ P05.5 已就位，include 正常放开（函数体仍挂起，原因见下）
 #include "AbilitySystem/TenkaichiGameplayEffectContext.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(TenkaichiDamageExecution)
@@ -43,7 +42,6 @@ UTenkaichiDamageExecution::UTenkaichiDamageExecution()
 // 执行计算的核心虚函数：GE 施加时被调用，算出这次打多少伤害
 void UTenkaichiDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
-#if 0	// ⚠️【注释挂起】P05.5 EffectContext 已就位 ✅；当前阻塞原因仅剩：TeamSubsystem.cpp 整体 #if 0（CanCauseDamage 链接不到）→ 待 ④ 解开后放开本段
 #if WITH_SERVER_CODE
 	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
 	FTenkaichiGameplayEffectContext* TypedContext = FTenkaichiGameplayEffectContext::ExtractEffectContext(Spec.GetContext());
@@ -147,5 +145,4 @@ void UTenkaichiDamageExecution::Execute_Implementation(const FGameplayEffectCust
 		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(UTenkaichiHealthSet::GetDamageAttribute(), EGameplayModOp::Additive, DamageDone));
 	}
 #endif // #if WITH_SERVER_CODE
-#endif // ⚠️【注释挂起】结束
 }

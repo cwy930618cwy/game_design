@@ -1,7 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#if 0	// TODO 4.6 GAS 核心就位后放开：依赖 PlayerState / TeamCheats / AbilitySystem 三个断点
-
 #include "Teams/TenkaichiTeamSubsystem.h"
 
 #include "AbilitySystemGlobals.h"
@@ -69,7 +67,9 @@ void FTenkaichiTeamTrackingInfo::RemoveTeamInfo(ATenkaichiTeamInfoBase* Info)
 	{
 		ensureMsgf(false, TEXT("Expected a previously registered team info but got %s"), *GetPathNameSafe(Info));
 	}
-}//////////////////////////////////////////////////////////////////////
+}
+
+//////////////////////////////////////////////////////////////////////
 // UTenkaichiTeamSubsystem
 
 UTenkaichiTeamSubsystem::UTenkaichiTeamSubsystem()
@@ -150,9 +150,9 @@ bool UTenkaichiTeamSubsystem::ChangeTeamForActor(AActor* ActorToChange, int32 Ne
 {
 	// 先尝试走 PlayerState（有玩家状态就用它改队）
 	const FGenericTeamId NewTeamID = IntegerToGenericTeamId(NewTeamIndex);
-	if (ATenkaichiPlayerState* LyraPS = const_cast<ATenkaichiPlayerState*>(FindPlayerStateFromActor(ActorToChange)))
+	if (ATenkaichiPlayerState* TenkaichiPS = const_cast<ATenkaichiPlayerState*>(FindPlayerStateFromActor(ActorToChange)))
 	{
-		LyraPS->SetGenericTeamId(NewTeamID);
+		TenkaichiPS->SetGenericTeamId(NewTeamID);
 		return true;
 	}
 	// 否则走队伍接口（实现 ITenkaichiTeamAgentInterface 的 Actor）
@@ -192,9 +192,9 @@ int32 UTenkaichiTeamSubsystem::FindTeamFromObject(const UObject* TestObject) con
 		}
 
 		// 情况 2c：回退到找关联的 PlayerState
-		if (const ATenkaichiPlayerState* LyraPS = FindPlayerStateFromActor(TestActor))
+		if (const ATenkaichiPlayerState* TenkaichiPS = FindPlayerStateFromActor(TestActor))
 		{
-			return LyraPS->GetTeamId();
+			return TenkaichiPS->GetTeamId();
 		}
 	}
 
@@ -210,23 +210,23 @@ const ATenkaichiPlayerState* UTenkaichiTeamSubsystem::FindPlayerStateFromActor(c
 		if (const APawn* Pawn = Cast<const APawn>(PossibleTeamActor))
 		{
 			//@TODO: 考虑用接口，或让队伍 Actor 在子系统里注册并维护一个 Map
-			if (ATenkaichiPlayerState* LyraPS = Pawn->GetPlayerState<ATenkaichiPlayerState>())
+			if (ATenkaichiPlayerState* TenkaichiPS = Pawn->GetPlayerState<ATenkaichiPlayerState>())
 			{
-				return LyraPS;
+				return TenkaichiPS;
 			}
 		}
 		// 是 Controller：从 Controller 的 PlayerState 拿
 		else if (const AController* PC = Cast<const AController>(PossibleTeamActor))
 		{
-			if (ATenkaichiPlayerState* LyraPS = Cast<ATenkaichiPlayerState>(PC->PlayerState))
+			if (ATenkaichiPlayerState* TenkaichiPS = Cast<ATenkaichiPlayerState>(PC->PlayerState))
 			{
-				return LyraPS;
+				return TenkaichiPS;
 			}
 		}
 		// 本身就是 PlayerState
-		else if (const ATenkaichiPlayerState* LyraPS = Cast<const ATenkaichiPlayerState>(PossibleTeamActor))
+		else if (const ATenkaichiPlayerState* TenkaichiPS = Cast<const ATenkaichiPlayerState>(PossibleTeamActor))
 		{
-			return LyraPS; 
+			return TenkaichiPS;
 		}
 
 		// 尝试用 instigator（被 Lyra 注释掉了，保留原样）
@@ -445,5 +445,3 @@ FOnTenkaichiTeamDisplayAssetChangedDelegate& UTenkaichiTeamSubsystem::GetTeamDis
 	return TeamMap.FindOrAdd(TeamId).OnTeamDisplayAssetChanged;
 }
 
-#endif	// TODO 4.6 GAS 核心就位后放开
-```---

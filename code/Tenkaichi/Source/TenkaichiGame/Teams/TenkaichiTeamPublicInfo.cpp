@@ -9,8 +9,6 @@
 
 class FLifetimeProperty;
 
-#if 0   // ⚠️【注释挂起】依赖 TeamInfoBase.cpp 的实现（已挂起），4.5 TeamSubsystem 就位后随之一并放开
-
 // 构造函数：只调基类构造函数
 ATenkaichiTeamPublicInfo::ATenkaichiTeamPublicInfo(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -42,4 +40,3 @@ void ATenkaichiTeamPublicInfo::OnRep_TeamDisplayAsset()
 	TryRegisterWithTeamSubsystem();
 }
 
-#endif  // ⚠️ 4.5 TeamSubsystem 就位后放开

@@ -8,8 +8,6 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(TenkaichiTeamInfoBase)
 
-#if 0   // ⚠️【注释挂起】依赖 TeamSubsystem，4.5 就位后放开
-
 class FLifetimeProperty;
 
 // 构造函数：队号初始化为"无队伍"，开启复制
@@ -93,4 +91,3 @@ void ATenkaichiTeamInfoBase::OnRep_TeamId()
 	TryRegisterWithTeamSubsystem();
 }
 
-#endif  // ⚠️ 4.5 TeamSubsystem 就位后放开

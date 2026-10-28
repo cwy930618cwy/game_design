@@ -116,14 +116,10 @@ void UTenkaichiTeamDisplayAsset::PostEditChangeProperty(FPropertyChangedEvent& P
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-	// ⚠️【注释挂起】以下代码硬依赖 TenkaichiTeamSubsystem（GAS 断点类，阶段五才就位）。
-	// 已登记到 `教学经验新对话必看\注释备忘录.md`，TeamSubsystem 就位后放开即可。
-	// 代码已一比一还原 Lyra，不是省略。
-	/*
+	// 通知所有世界的队伍子系统：这份外观资产改了，让观察者刷新
 	for (UTenkaichiTeamSubsystem* TeamSubsystem : TObjectRange<UTenkaichiTeamSubsystem>())
 	{
 		TeamSubsystem->NotifyTeamDisplayAssetModified(this);
 	}
-	*/
 }
 #endif
