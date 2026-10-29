@@ -68,10 +68,13 @@ class UTenkaichiTeamSubsystem : public UWorldSubsystem
 	GENERATED_BODY()
 
 public:
+	// 构造函数：初始化队伍子系统的默认状态
 	UE_API UTenkaichiTeamSubsystem();
 
 	//~USubsystem 接口
+	// 子系统初始化时调用：注册网络同步回调、订阅 Experience 加载完成事件
 	UE_API virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	// 子系统反初始化时调用：清理已注册的队伍信息
 	UE_API virtual void Deinitialize() override;
 	//~USubsystem 接口结束
 

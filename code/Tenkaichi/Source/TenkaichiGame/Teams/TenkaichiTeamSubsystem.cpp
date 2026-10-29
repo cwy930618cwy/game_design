@@ -240,7 +240,9 @@ const ATenkaichiPlayerState* UTenkaichiTeamSubsystem::FindPlayerStateFromActor(c
 	}
 
 	return nullptr;
-}// 比较两个 Actor 的队伍，返回同队/异队/无效（带输出参数）
+}
+
+// 比较两个 Actor 的队伍，返回同队/异队/无效（带输出参数）
 ETenkaichiTeamComparison UTenkaichiTeamSubsystem::CompareTeams(const UObject* A, const UObject* B, int32& TeamIdA, int32& TeamIdB) const
 {
 	TeamIdA = FindTeamFromObject(Cast<const AActor>(A));
