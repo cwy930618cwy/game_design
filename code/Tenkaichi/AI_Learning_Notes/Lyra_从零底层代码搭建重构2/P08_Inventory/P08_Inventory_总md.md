@@ -188,15 +188,25 @@ P08 是 **⑳ 号挂起的解锁时机之一**。
 
 ---
 
-## 七、下一步（铁律 35）
+## 七、进度状态（铁律 35/38）
 
 按铁律 35：**每个独立教学内容必须先建它自己的总 md**，上级总 md（本文件）不能替代。
 
-- ✅ 本阶段总 md 已建（2026-10-29）
-- ⬜ **下一步 = 建 P08.1 `TenkaichiInventoryItemDefinition` 自己的总 md**
-  （为什么 + 全景 + 依赖分析），停等确认后再教 `.h`（57 行）、再教 `.cpp`（45 行）
+| 编号 | 内容 | 状态 |
+|------|------|------|
+| P08.1 | `TenkaichiInventoryItemDefinition` | ✅ 三件套完成 |
+| P08.2 | `TenkaichiInventoryItemInstance` | ✅ 三件套完成 |
+| P08.3 | `InventoryFragment_SetStats` | ✅ 三件套完成 |
+| P08.4 | `InventoryFragment_EquippableItem` | ✅ 三件套完成 |
+| P08.5 | `InventoryFragment_PickupIcon` | ✅ 三件套完成 |
+| P08.6 | `InventoryFragment_QuickBarIcon` | ✅ 三件套完成 |
+| P08.7 | `TenkaichiInventoryManagerComponent` | ✅ 三件套完成（2026-10-30） |
+| P08.8 | `IPickupable` | ✅ 三件套完成（2026-10-30） |
 
-> ⚠️ 命名：文件叫 `P08.1_TenkaichiInventoryItemDefinition_总md.md`（铁律 37，照抄 P07 格式）。
+- ✅ 本阶段总 md 已建（2026-10-29）
+- 🎉 **P08 Inventory 阶段全部完成**（8 类 / 16 文件，2026-10-30）
+
+> ⚠️ 命名：文件叫 `P08.8_IPickupable_总md.md`（铁律 37）。⚠️ `IPickupable` Lyra 原文无 `Lyra` 前缀 → 文件名/类名保持原样，不加 `Tenkaichi`。
 > 本文件（P08.1）**一个 `.h` 里有 3 个类**（Fragment 基类 + Definition + FunctionLibrary），
 > 总 md 要一次讲清这 3 个的关系——**但 `.h` 和 `.cpp` 仍分开教、分开建 md**。
 </content>
