@@ -104,7 +104,10 @@ P09.1 EquipmentDefinition ── 依赖 P05 AbilitySet（最底）
 | P09.3 | `TenkaichiEquipmentManagerComponent` | ✅ 三件套完成（`.h` 170 行 / `.cpp` 300 行已落盘，2026-10-30） |
 | P09.4 | `TenkaichiPickupDefinition` | ✅ 三件套完成（`.h` 73 行 / `.cpp` 7 行已落盘，2026-10-30） |
 | P09.5 | `TenkaichiQuickBarComponent` | ✅ 三件套完成（`.h` 135 行 / `.cpp` 240 行已落盘，2026-10-30） |
-| P09.6 | `TenkaichiGameplayAbility_FromEquipment` | ⬜ **下一步**（解开 ⑳ 号挂起） |
+| P09.6 | `TenkaichiGameplayAbility_FromEquipment` | ✅ 三件套完成（`.h` 41 行 / `.cpp` 59 行已落盘，2026-10-30） |
+
+> 🎉 **P09 Equipment 阶段全部完成**（6 类 / 12 文件，2026-10-30）。
+> 🔓 **⑳ 号挂起依赖已就位**：`FromEquipment` + `InventoryItemInstance` + `GameplayAbility` 三者齐，可解开 `AbilityCost_ItemTagStack.cpp`。
 
 > ⚠️ 到 **P09.6 `GameplayAbility_FromEquipment`** 时，翻注释备忘录解开 **⑳ 号挂起**（`AbilityCost_ItemTagStack.cpp`）。
 
