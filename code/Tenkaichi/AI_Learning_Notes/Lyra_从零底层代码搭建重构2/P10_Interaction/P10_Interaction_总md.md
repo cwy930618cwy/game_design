@@ -4,7 +4,7 @@
 > 每个类另有自己的总 md + `.h` + `.cpp` 教学 md（铁律 35）。
 >
 > **建立时间**：2026-11-02
-> **教学状态**：✅ 已教完 P10.1（3 结构体）+ P10.2（`IInteractableTarget`）+ P10.3（`IInteractionInstigator`）+ P10.4（`UInteractionStatics`）+ P10.5（`UAbilityTask_GrantNearbyInteraction`），下一步 P10.6 `UAbilityTask_WaitForInteractableTargets`（总 md 待建）
+> **教学状态**：✅ 已教完 P10.1~P10.9（3 结构体 + `IInteractableTarget` + `IInteractionInstigator` + `UInteractionStatics` + 3 任务 + `AGameplayAbilityTargetActor_Interact` + `UTenkaichiGameplayAbility_Interact`）。P10.9 `.cpp` 依赖 P12 PlayerController + P16 UI，已注释挂起（登记注释备忘录）。**P10 阶段全部完结 ✅**
 
 ---
 
@@ -109,7 +109,7 @@ P10.1 Query + Option + DurationMessage ── 纯引擎（最底）
 ## 七、教学节奏（铁律 20/29/35）
 
 1. ✅ 本阶段总 md（现在这一步）
-2. ✅ P10.1 三个结构体 ✅ → P10.2 `IInteractableTarget` ✅ → P10.3 `IInteractionInstigator` ✅ → P10.4 `UInteractionStatics` ✅ → P10.5 `UAbilityTask_GrantNearbyInteraction` ✅ → ... → P10.9，逐个「总 md → `.h` → `.cpp`」
+2. ✅ P10.1 三个结构体 ✅ → P10.2 `IInteractableTarget` ✅ → P10.3 `IInteractionInstigator` ✅ → P10.4 `UInteractionStatics` ✅ → P10.5 `UAbilityTask_GrantNearbyInteraction` ✅ → P10.6 `UAbilityTask_WaitForInteractableTargets` ✅ → P10.7 `UAbilityTask_WaitForInteractableTargets_SingleLineTrace` ✅ → P10.8 `AGameplayAbilityTargetActor_Interact` ✅ → P10.9 `UTenkaichiGameplayAbility_Interact`（待建）→ 逐个「总 md → `.h` → `.cpp`」
 
 > ⚠️ 注意：
 > - P10.1/P10.2/P10.3 是**纯 `.h`（无 `.cpp`）**，教学节奏简化为「总 md → 教 `.h`」（无 `.cpp` 步骤）。
