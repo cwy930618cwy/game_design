@@ -3,8 +3,8 @@
 > **定位**：本文件是 P11 Weapons（武器系统）的**阶段总 md**（为什么 + 全景 + 依赖分析 + 教学顺序）。
 > 每个类另有自己的总 md + `.h` + `.cpp` 教学 md（铁律 35）。
 >
-> **建立时间**：2026-11-03
-> **教学状态**：🟡 阶段总 md 已建（停等确认后再教 P11.1）
+> **建立时间**：2026-11-06
+> **教学状态**：✅ 完成 —— P11.1 `ULyraWeaponInstance` 总md+.h+.cpp 已教（2026-11-03）；P11.2 `ULyraRangedWeaponInstance` 总md+.h+.cpp 已教（2026-11-04）；P11.3 `ULyraWeaponStateComponent` 总md+.h+.cpp 已教（2026-11-04）；P11.4 `ULyraWeaponSpawner` 总md+.h+.cpp 已教（2026-11-04）；P11.5 `ULyraGameplayAbility_RangedWeapon` 总md+.h+.cpp 已教（2026-11-04）；P11.6 `UInventoryFragment_ReticleConfig` 总md+.h 已教（2026-11-04）✅（纯 `.h`，无 `.cpp`）；P11.7 `ULyraWeaponDebugSettings` 总md+.h+.cpp 已教（2026-11-04）✅；P11.8 `ULyraDamageLogDebuggerComponent` 总md+.h+.cpp 已教（2026-11-04）✅（零挂起）
 
 ---
 
@@ -117,7 +117,7 @@ P11.8 DamageLogDebuggerComponent ── 依赖 P01 FLyraVerbMessage + GameplayMe
 ## 六、教学节奏（铁律 20/29/35）
 
 1. 🟡 本阶段总 md（现在这一步）
-2. ⬜ P11.1 `UTenkaichiWeaponInstance` → P11.2 `UTenkaichiRangedWeaponInstance` → P11.3 `UTenkaichiWeaponStateComponent` → P11.4 `UTenkaichiWeaponSpawner` → P11.5 `UTenkaichiGameplayAbility_RangedWeapon` → P11.6 `UInventoryFragment_ReticleConfig` → P11.7 `UTenkaichiWeaponDebugSettings` → P11.8 `UTenkaichiDamageLogDebuggerComponent`，逐个「总 md → `.h` → `.cpp`」
+2. ✅ P11.1 `UTenkaichiWeaponInstance`（总md+.h+.cpp）→ ✅ P11.2 `UTenkaichiRangedWeaponInstance`（总md+.h+.cpp）→ ✅ P11.3 `UTenkaichiWeaponStateComponent`（总md+.h+.cpp）→ ✅ P11.4 `UTenkaichiWeaponSpawner`（总md+.h+.cpp）→ ✅ P11.5 `UTenkaichiGameplayAbility_RangedWeapon`（总md+.h+.cpp）→ ✅ P11.6 `UInventoryFragment_ReticleConfig`（总md+.h，2026-11-04）→ ✅ P11.7 `UTenkaichiWeaponDebugSettings`（总md+.h+.cpp，2026-11-04）→ ✅ P11.8 `UTenkaichiDamageLogDebuggerComponent`（总md+.h+.cpp，2026-11-04）✅ P11 阶段全部完成
 
 > ⚠️ 注意：
 > - P11.6 `UInventoryFragment_ReticleConfig` 是**纯 `.h`（无 `.cpp`）**，节奏简化为「总 md → 教 `.h`」。
