@@ -1,6 +1,6 @@
-# 4.9 Experience / GameModes —— 一场游戏怎么开局（总 md）
+# P13 Experience / GameModes —— 一场游戏怎么开局（总 md）
 
-> **定位**：本文件是 4.9（Experience 经验系统 + GameMode 游戏模式）的**总入口 + 全景地图**。
+> **定位**：本文件是 P13（Experience 经验系统 + GameMode 游戏模式）的**总入口 + 全景地图**。
 > 目标：理解并一比一还原 Lyra 在 `Source/LyraGame/GameModes/` 底下的"一场游戏怎么定规则、怎么开局"。
 > 源码依据：`E:\ue5\LyraStarterGame5.6\LyraStarterGame\Source\LyraGame\GameModes\`（20 个文件）
 > 命名映射：`Lyra`→`Tenkaichi`，其余一字不改（铁律 24）。目录：`Source/TenkaichiGame/GameModes/`（**工程里还没有，要新建**）。
@@ -9,10 +9,10 @@
 
 ## 〇、为什么先建这个总 md（铁律 35）
 
-4.9 是一个**独立教学内容**（一大块：Experience 系统 + GameMode/GameState），不能直接跳到教 `.h`/`.cpp`。
+P13 是一个**独立教学内容**（一大块：Experience 系统 + GameMode/GameState），不能直接跳到教 `.h`/`.cpp`。
 按铁律 20/29/35，必须先建本总 md（讲为什么 + 全景 + 依赖分析），**停下等确认**，再逐个类教 `.h`、`.cpp`。
 
-> 上一节 4.8（玩家类）已全部教完落盘，阶段四 L4 剩 4.9 这一大块就收尾。
+> 上一节 P12（玩家类）已全部教完落盘，阶段四 L4 剩 P13 这一大块就收尾。
 
 ---
 
@@ -22,7 +22,7 @@
 
 1. **谁来扮演**（角色）→ 4.6/4.7 的角色 Pawn ✅
 2. **谁能进游戏**（玩家）→ 4.8 的 PlayerController/PlayerState/LocalPlayer ✅
-3. **一场游戏怎么开局、怎么换图**（GameMode / Experience）→ **本小节 4.9** 🟡
+3. **一场游戏怎么开局、怎么换图**（GameMode / Experience）→ **本小节 P13** 🟡
 
 前 4.8 讲的是"玩家这个个体怎么连进游戏"。但**一场游戏本身**还需要回答：
 - 这局用**哪套规则**？（什么 Pawn、什么能力、什么输入、加载哪些 GameFeature 插件）
@@ -104,24 +104,24 @@ ExperienceDefinition / ExperienceActionSet / ExperienceManager / WorldSettings /
 
 | 顺序 | 类 | 依赖 | 处理 |
 |------|----|------|------|
-| 4.9.1 | `ExperienceDefinition` | 引擎 + `PawnData`✅ | ✅ 独立，可教 |
-| 4.9.2 | `ExperienceActionSet` | 引擎 | ✅ 独立，可教 |
-| 4.9.3 | `ExperienceManager` | 引擎 | ✅ 独立，可教 |
-| 4.9.4 | `WorldSettings` | 引擎 | ✅ 独立，可教 |
-| 4.9.5 | `ExperienceManagerComponent` | GameFeatures + AssetManager/Settings（断点） | ⚠️ 代码照写 + 注释挂起 |
-| 4.9.6 | `AsyncAction_ExperienceReady` | 组 A 内部 | ✅（依赖已教部分） |
-| 4.9.7 | `GameMode` | 组 A + CommonUser✅ + GAS | ⚠️ 代码照写 + 注释挂起 |
-| 4.9.8 | `GameState` | GAS 核心（断点） | ⚠️ 代码照写 + 注释挂起 |
+| P13.1 | `ExperienceDefinition` | 引擎 + `PawnData`✅ | ✅ 独立，可教 |
+| P13.2 | `ExperienceActionSet` | 引擎 | ✅ 独立，可教 |
+| P13.3 | `ExperienceManager` | 引擎 | ✅ 独立，可教 |
+| P13.4 | `WorldSettings` | 引擎 | ✅ 独立，可教 |
+| P13.5 | `ExperienceManagerComponent` | GameFeatures + AssetManager/Settings（断点） | ⚠️ 代码照写 + 注释挂起 |
+| P13.6 | `AsyncAction_ExperienceReady` | 组 A 内部 | ✅（依赖已教部分） |
+| P13.7 | `GameMode` | 组 A + CommonUser✅ + GAS | ⚠️ 代码照写 + 注释挂起 |
+| P13.8 | `GameState` | GAS 核心（断点） | ⚠️ 代码照写 + 注释挂起 |
 | （选学）| `BotCreationComponent` / `UserFacingExperienceDefinition` | AI / 在线 | 后续按需 |
 
-> ⚠️ **核心现实（铁律 30/31/35）**：4.9 的断点（`ExperienceManagerComponent`/`GameMode`/`GameState`）同样**无底拖出** L5 GAS 核心 + AssetManager 收口类 + L3 Settings。但按死结处理铁律：**死结没关系，代码照写 + 注释挂起 + 登记备忘录 + 继续推进，不停下**。
+> ⚠️ **核心现实（铁律 30/31/35）**：P13 的断点（`ExperienceManagerComponent`/`GameMode`/`GameState`）同样**无底拖出** P05 GAS 核心 + AssetManager 收口类 + P18 Settings。但按死结处理铁律：**死结没关系，代码照写 + 注释挂起 + 登记备忘录 + 继续推进，不停下**。
 
 ---
 
 ## 五、待确认
 
-1. 4.9 范围是否按 **组 A（Experience 核心）+ 组 B（GameMode/GameState/WorldSettings）** 教，组 C（Bot/UserFacing）留作选学？
-2. 是否按建议顺序 **4.9.1 ExperienceDefinition → 4.9.2 ActionSet → 4.9.3 Manager → 4.9.4 WorldSettings → 4.9.5 ManagerComponent → 4.9.6 AsyncAction → 4.9.7 GameMode → 4.9.8 GameState** 走？
+1. P13 范围是否按 **组 A（Experience 核心）+ 组 B（GameMode/GameState/WorldSettings）** 教，组 C（Bot/UserFacing）留作选学？
+2. 是否按建议顺序 **P13.1 ExperienceDefinition → P13.2 ActionSet → P13.3 Manager → P13.4 WorldSettings → P13.5 ManagerComponent → P13.6 AsyncAction → P13.7 GameMode → P13.8 GameState** 走？
 3. 断点类（`ExperienceManagerComponent`/`GameMode`/`GameState`）按铁律 35 **代码照写 + 注释挂起 + 登记备忘录**，OK 吗？
 4. 确认后我**逐个类**教：每个类先建它自己的总 md → 停 → 教 `.h` → 停 → 教 `.cpp`（铁律 20/29/35）。
 
