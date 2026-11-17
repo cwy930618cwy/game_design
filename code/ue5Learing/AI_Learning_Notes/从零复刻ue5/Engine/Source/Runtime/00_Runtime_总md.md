@@ -144,7 +144,7 @@ flowchart TD
 
 1. **本轮只建这一份总 md**，停下等你说「懂了 / 下一步」。
 2. **185 个模块目录全都要教、要还原**，一个不删、不跳、不按「我觉得用不上」筛掉。
-3. ✅ **已按你 2026-11-14 指令先进 `Core\`**：本层总 md 已建 `Runtime\Core\00_Core_总md.md`（1993 文件全景 + `Public`/`Private`/`Internal`/`Tests` + `Core.Build.cs` 新符号）。**⏳ 下一步**：在 `Core\` 下选一个（`Public\` 建议 / `Core.Build.cs` / `Private` / `Internal` / `Tests`），等你定，不擅自开。
+3. ✅ **已按你 2026-11-14 指令先进 `Core\`**：本层总 md 已建 `Runtime\Core\00_Core_总md.md`（1993 文件全景 + `Public`/`Private`/`Internal`/`Tests` + `Core.Build.cs` 新符号）。✅ **2026-11-16 已进 `Core\Public\`**：`Runtime\Core\00_Public_总md.md` 已建（1196 文件 / 46 子目录 + 7 散头）。**⏳ 下一步**：在 `Public\` 下选一个（7 个散头建议 / `Containers` / `Math` / `HAL` / `Misc`），等你定，不擅自开。
 4. 每教一步同步更新 `00_Source_总md.md`、`00_Engine_总md.md` 与根总纲的进度列（✅/🟡/⬜/⏳）。
 5. **下次「下一步」先验收还原文件**：本层还原落点为 `ue_5.6\Engine\Source\Runtime\`；展开到哪个模块，就验收那个模块下的还原文件，全对才推进、有错不推进。
 6. 讲义必须落成 md，不能只发聊天。

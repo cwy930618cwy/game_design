@@ -1,123 +1,187 @@
-# 02 — `UnrealEditor.Target.cs` 完整代码（一比一还原）
+# 02 — `UnrealEditor.Target.cs` 逐行注释版（超详细）
 
-> **对应真实文件**：`D:\ue5\Epic Games\UE_5.6\Engine\Source\UnrealEditor.Target.cs`（实读 **16 行**）。
-> **本轮只展开这一个文件**；`UnrealGame.Target.cs` 等这份确认后再单独展开（不合并）。
-> **交付口径**：代码一字不改、零改名；注释中文化；类与构造函数上方补中文注释；代码块零行内教学提示。
-
----
-
-## 一、本文件要解决什么（先讲为什么）
-
-UBT（编译施工队）开工前必须先看到一张单子，写明「这次要编的是**编辑器**」。这张单子就是答案：它不写任何游戏逻辑，只在构造函数里拨几个开关，让 UBT 知道「目标类型 = Editor、所有模块都编、用最新 include 顺序」。
-
-**使用场景**：你在 VS 里编译 `UnrealEditor` 目标（或重新生成工程文件）时，UBT 就是按目标名找到 `UnrealEditor.Target.cs`、读它、再决定编哪些模块。没有这张单子，施工队不知道要盖什么。
-
-**为什么单独一份 md**：一比一复刻要求**一个真实文件对应一份讲义**，不合并、不拆；上一课 `01_两个Target文件_总md.md` 是两张单子的合讲（全景），这一课才是第一张单子的完整内容。
-
-> **记忆点（考点）**：它是 **C# 文件**，16 行，继承 `TargetRules`；`Source\` 顶层只有它和 `UnrealGame.Target.cs` 两个散文件。
+> 依据：`D:\ue5\Epic Games\UE_5.6\Engine\Source\UnrealEditor.Target.cs`（**16 行**）
+> 你新建文件：`ue_5.6\Engine\Source\UnrealEditor.Target.cs`
+> **✅ 本节可独立编译**——C# 构建脚本，由 UBT 自己编译，不参与 C++ 编译。
+> **注意**：这份是**讲解版**（每行都有详细注释），交付版在 `02_UnrealEditor.Target.cs_完整代码.md`。
 
 ---
 
-## 二、对应 UE5 真实源码（只给路径，不整段贴原文）
+## 一、这个文件解决什么问题（为什么）
 
-| 项 | 值 |
-|---|---|
-| 真实路径 | `D:\ue5\Epic Games\UE_5.6\Engine\Source\UnrealEditor.Target.cs` |
-| 真实行数 | 16 行（含 1 行版权注释、2 行 `using`、1 行空行、1 个类、1 个构造函数、5 行设置） |
-| 名字 | **完全不改**，md 名也沿用真实文件名 `UnrealEditor.Target.cs` |
-| 唯一权威 | 引擎真实源码（本路线不做前缀替换，没有「Lyra 原文」这一环节） |
+UBT（编译施工队）开工前必须先看到一张单子，写明「这次要编的是**编辑器**」。这张单子就是答案：它不写任何游戏逻辑，只在构造函数里拨几个开关。
 
-**交付版与原文的差别只有 3 处，全部是注释**（代码行一字不动，连 Tab 缩进、`( TargetInfo Target )` 里的空格都照抄）：
+**说个场景**：你在 VS 里编译 `UnrealEditor` 目标时，UBT 按目标名找到 `UnrealEditor.Target.cs`、读它、再决定编哪些模块。没有这张单子，施工队不知道要盖什么。
 
-1. 第 1 行版权注释 `// Copyright Epic Games, Inc. All Rights Reserved.` → 译成中文；
-2. 类声明上方**补** 1 行中文注释（原文此处没有注释）；
-3. 构造函数上方**补** 1 行中文注释（原文此处没有注释）。
-
-> ⚠️ 补注释是「只不改名，注释仍中文」口径允许的例外，**不是加代码逻辑**；如果你要保留版权声明英文原文，说一声即可换回。
+> 🔑 **一句话**：16 行 C# 纸条，写着「这次盖编辑器，全编」。
 
 ---
 
-## 三、完整代码（已中文化，可直接照抄）
+## 二、完整代码（每行都有详细注释）
 
 ```csharp
 // 版权所有 Epic Games, Inc. 保留所有权利。
+// 版权声明，引擎每个源文件第一行都是它，交付时译成中文。
 
+// 引入 UBT（UnrealBuildTool）程序集。
+// 本文件用到的 TargetRules（基类）、TargetInfo（目标信息）、
+// TargetType（目标类型枚举）、EngineIncludeOrderVersion（include 顺序枚举）、
+// TargetBuildEnvironment（构建环境枚举）全部来自这个程序集。
 using UnrealBuildTool;
+
+// 引入 C# 泛型容器命名空间。
+// 本文件其实没直接写 List<>，但引擎原样保留了它 —— 一比一复刻不许因为「看起来没用」就删。
 using System.Collections.Generic;
 
-// 编辑器构建目标：告诉 UBT 这次编的是编辑器，并把所有模块都编进来
+// 声明编辑器构建目标类，继承 TargetRules。
+// 类名必须等于目标名（UnrealEditorTarget），UBT 按类名找到这份单子。
+// TargetRules 是所有 *.Target.cs 的基类，定义在 TargetRules.cs:528
+// （public abstract partial class TargetRules）。
 public class UnrealEditorTarget : TargetRules
 {
-	// 构造函数：把当前编译目标（平台 / 配置等信息）交给基类 TargetRules
+	// 构造函数：参数 Target 是 TargetInfo（目标信息），装着「当前编哪个平台 / 哪种配置」。
+	// 注意：参数名和类型之间、括号内侧都有空格（( TargetInfo Target )），引擎原文如此，照抄。
+	// : base(Target) 把 Target 交给基类 TargetRules 保存，后面才能改基类的字段。
+	// TargetInfo 类定义在 TargetInfo.cs:12。
 	public UnrealEditorTarget( TargetInfo Target ) : base(Target)
 	{
+		// 声明「目标是编辑器」。
+		// Type 属性定义在 TargetRules.cs:681，默认值是 TargetType.Game。
+		// TargetType 枚举定义在 TargetRules.cs:20，5 个值：
+		// Game / Editor / Client / Server / Program。
+		// 这一行是整个文件最核心的一行 —— 它决定了这次编的是 UnrealEditor.exe。
 		Type = TargetType.Editor;
+
+		// 设置 include 顺序版本为「最新」。
+		// IncludeOrderVersion 属性定义在 TargetRules.cs:703。
+		// EngineIncludeOrderVersion 枚举定义在 TargetRules.cs:168，
+		// 值有 Unreal5_1 ~ Unreal5_6 / Latest / Oldest。
+		// Latest = Unreal5_6（TargetRules.cs:209）。
+		// 为什么用 Latest：避免老式「隐式包含」依赖，强制每个文件自己 include 需要的头。
 		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+
+		// 设置构建环境为「共享」。
+		// BuildEnvironment 属性定义在 TargetRules.cs:2740。
+		// TargetBuildEnvironment 枚举定义在 TargetRules.cs:77，3 个值：
+		// Shared / Unique / UniqueIfNeeded。
+		// Shared = 引擎二进制和中间产物输出到引擎目录，多个目标共用（省磁盘、省编译时间）。
+		// Unique = 每个目标单独一套（改引擎设置时用）。
 		BuildEnvironment = TargetBuildEnvironment.Shared;
+
+		// 声明「编译所有模块」。
+		// bBuildAllModules 属性定义在 TargetRules.cs:788，bool，默认 false。
+		// 为什么编辑器要 true：编辑器要用到各种工具模块（材质编辑器、蓝图编辑器、
+		// 关卡编辑器…），必须全编进来；游戏目标不需要，所以游戏单里没有这行。
 		bBuildAllModules = true;
+
+		// 往「额外模块清单」里加 UnrealGame 模块。
+		// ExtraModuleNames 属性定义在 TargetRules.cs:2716，
+		// 类型 List<string>，初始值 new()（空列表）。
+		// 为什么编辑器也要加 UnrealGame：编辑器要加载游戏侧的运行时模块，
+		// 才能在 PIE（Play In Editor）里跑游戏内容。
 		ExtraModuleNames.Add("UnrealGame");
 	}
 }
 ```
 
-> ✅ **交付前逐行扫描（铁律 45，硬动作已执行）**
->
-> | 检查项 | 结果 |
-> |---|---|
-> | 代码块里还有英文注释吗 | ✅ 无，版权头已中文化 |
-> | 类声明上方有中文注释吗 | ✅ 有 |
-> | 构造函数（唯一方法）上方有中文注释吗 | ✅ 有 |
-> | 有没有空 `/**  */` 占位 / 只写表格不带注释 | ✅ 无 |
-> | 有没有 `// ← 改成XXX` 行内教学提示 | ✅ 无 |
-> | 有没有残留前缀 / 擅自改名 | ✅ 无，全是 UE5 原名 |
-> | 16 行代码逐字一致吗 | ✅ 仅多 2 行中文注释，代码行零改动 |
-> | 照抄能否直接用 | ✅ 是干净的最终版 |
-
 ---
 
-## 四、逐段讲解（回扣「为什么这么写」）
+## 三、逐行拆解（本段新元素 + 这段在干什么）
 
-| 原文行 | 代码 | 为什么这么写（大白话） |
+### 3.1 开头与类声明（第 1~8 行）
+
+**本段新元素**
+
+- `using UnrealBuildTool` —— 引入 UBT 程序集，`TargetRules` / `TargetInfo` / `TargetType` 都在里面
+- `using System.Collections.Generic` —— 引入泛型容器（本文件没直接用，引擎原样保留）
+- `TargetRules` —— **目标规则基类**，所有 `*.Target.cs` 都继承它（`TargetRules.cs:528`）
+- `TargetInfo` —— **目标信息**，装着平台 / 配置等（`TargetInfo.cs:12`）
+- `base(Target)` —— 调基类构造函数，把 `Target` 存进 `TargetRules`
+
+**这段在干什么**：声明 `UnrealEditorTarget` 类继承 `TargetRules`，构造函数接收 `TargetInfo` 并交给基类。
+
+> 类比：`Target.cs` 是「今天盖什么」，`Build.cs` 是「这间房怎么盖」——同一个包工头（UBT），两张不同的单子。
+
+### 3.2 五个设置（第 10~14 行）
+
+**本段新元素**
+
+- `TargetType` —— 目标类型枚举，5 个值 Game/Editor/Client/Server/Program（`TargetRules.cs:20`）
+- `TargetType.Editor` —— 编辑器枚举值（`TargetRules.cs:30`）
+- `Type` —— 目标类型属性，默认 `TargetType.Game`（`TargetRules.cs:681`）
+- `EngineIncludeOrderVersion` —— include 顺序版本枚举（`TargetRules.cs:168`）
+- `EngineIncludeOrderVersion.Latest` —— 最新版本，= `Unreal5_6`（`TargetRules.cs:209`）
+- `IncludeOrderVersion` —— include 顺序属性（`TargetRules.cs:703`）
+- `TargetBuildEnvironment` —— 构建环境枚举，3 个值 Shared/Unique/UniqueIfNeeded（`TargetRules.cs:77`）
+- `TargetBuildEnvironment.Shared` —— 共享构建环境（`TargetRules.cs:82`）
+- `BuildEnvironment` —— 构建环境属性（`TargetRules.cs:2740`）
+- `bBuildAllModules` —— 是否编所有模块，默认 false（`TargetRules.cs:788`）
+- `ExtraModuleNames` —— 额外模块清单，`List<string>`（`TargetRules.cs:2716`）
+
+**这段在干什么**
+
+| 行 | 代码 | 干什么 |
 |---|---|---|
-| 1 | `// Copyright …` | 版权声明，引擎每个源文件都有；按口径译成中文 |
-| 3 | `using UnrealBuildTool;` | `TargetRules`、`TargetType` 这些类型都来自 UBT 程序集，不引入就找不到基类 |
-| 4 | `using System.Collections.Generic;` | 引入 C# 泛型容器。**本文件其实没直接写 `List<>`，但引擎原样保留了它** —— 一比一复刻不许因为「看起来没用」就删（铁律 23/25） |
-| 6 | `public class UnrealEditorTarget : TargetRules` | 类名 = 目标名，UBT 按这个名字找单子；继承 `TargetRules`（`TargetRules.cs:528`）才能拿到下面那些字段 |
-| 8 | `public UnrealEditorTarget( TargetInfo Target ) : base(Target)` | `TargetInfo` 装着「当前编哪个平台 / 哪种配置」；`: base(Target)` 必须先把它交给基类，后面才能改基类的字段 |
-| 10 | `Type = TargetType.Editor;` | **最核心一行**：声明目标是编辑器（`TargetType` 枚举在 `TargetRules.cs:20`） |
-| 11 | `IncludeOrderVersion = EngineIncludeOrderVersion.Latest;` | 用 UE5.6 最新的 include 顺序规则，避免老式「隐式包含」依赖（枚举在 `TargetRules.cs:168`） |
-| 12 | `BuildEnvironment = TargetBuildEnvironment.Shared;` | 共享构建环境，引擎模块可在多个目标间复用（枚举在 `TargetRules.cs:77`） |
-| 13 | `bBuildAllModules = true;` | 编辑器要把**所有模块**编进来（各种编辑器工具都要能用）；游戏目标不需要，所以游戏单里没有这行 |
-| 14 | `ExtraModuleNames.Add("UnrealGame");` | 额外把 `UnrealGame` 模块编进来；字段定义在 `TargetRules.cs:2716`：`public List<string> ExtraModuleNames { get; } = new();` |
+| 10 | `Type = TargetType.Editor;` | **最核心**：声明目标是编辑器 |
+| 11 | `IncludeOrderVersion = EngineIncludeOrderVersion.Latest;` | 用 UE5.6 最新 include 顺序 |
+| 12 | `BuildEnvironment = TargetBuildEnvironment.Shared;` | 共享构建环境，多目标复用 |
+| 13 | `bBuildAllModules = true;` | 编辑器要编所有模块 |
+| 14 | `ExtraModuleNames.Add("UnrealGame");` | 额外编 UnrealGame 模块（PIE 要用） |
 
-### 常见疑问，正面回答
-
-- **「`using System.Collections.Generic;` 没用到，删了行不行？」** 不行。一比一复刻看的是引擎真实文件长什么样，不是「能不能少一行」；删了就和 UE5 对不上号了。
-- **「编辑器单为什么还要 `Add("UnrealGame")`？」** 编辑器也要加载游戏侧的运行时模块，才能在 PIE 里跑游戏内容；这是引擎原样，两个目标都写。
-- **「`bBuildAllModules = true` 会不会把第三方库也全编？」** 它控制的是 UBT 收集**引擎模块**的范围；具体编哪些还受平台、配置、模块规则约束。这里先大概讲，细节到 `Programs\UnrealBuildTool\` 展开时再深入（铁律 27：写全 → 大概讲 → 详细后置）。
+> 类比：这五行是「施工单上的五个勾选框」——盖什么（Editor）、按哪版规范（Latest）、材料放哪（Shared）、全做还是部分做（true）、额外加什么（UnrealGame）。
 
 ---
 
-## 五、教学节奏与下一步
+## 四、我们这版 vs 引擎的差异
 
-1. **本轮只交付这一个文件的完整代码**，停下等你说「懂了 / 下一步」。
-2. **⏳ 下一步**：展开 `UnrealGame.Target.cs` 完整 17 行，同样一比一贴全、注释中文化、逐行扫描；重点讲它比编辑器单**多** `[SupportedPlatforms(UnrealPlatformClass.All)]`、**少** `bBuildAllModules = true`。
-3. 每教一步同步更新 `01_两个Target文件_总md.md`、`00_Source_总md.md`、`00_Engine_总md.md` 与根总纲的进度列。
-4. 讲义必须落成 md，不能只发聊天；收到「下一步」先核对上一步产物真落盘了再推进。
-5. ✅ 还原目录已由用户 2026-11-14 指定：`ue_5.6\`；每次「下一步」先按 `01_下一步前先检查还原文件.md` 验收还原文件，全对才推进、有错不推进。
+| 项 | 引擎原文 | 我们这版 | 说明 |
+|----|---------|---------|------|
+| 文件名 | `UnrealEditor.Target.cs` | `UnrealEditor.Target.cs` | **完全一致** |
+| 路径 | `Engine\Source\` | `ue_5.6\Engine\Source\` | 只换根 |
+| 类名 | `UnrealEditorTarget` | `UnrealEditorTarget` | 完全一致 |
+| 代码行 | 16 行 | 16 行 | **行数一致**（注释原地中文化 + 补注释） |
+| 英文注释 | 1 处（版权头） | 0 处 | 译成中文 |
+| 补注释 | 无 | 类上方 + 构造函数上方 | 允许的例外 |
+| 特殊空格 | `( TargetInfo Target )` | 原样保留 | 括号内侧有空格，照抄 |
+
+> 除注释外，**代码一字不差**。
 
 ---
 
-## 六、速查表 · 口诀 · 一句话白话总结
+## 五、收尾
+
+到这里 `UnrealEditor.Target.cs` 就完了（16 行）。
+
+**结构**：一个 `TargetRules` 子类，构造函数里 5 个设置——`Type` / `IncludeOrderVersion` / `BuildEnvironment` / `bBuildAllModules` / `ExtraModuleNames`。
+
+**关键概念**：
+- `Type = TargetType.Editor` 决定编的是编辑器
+- `bBuildAllModules = true` 是编辑器专属（游戏单没有）
+- `ExtraModuleNames.Add("UnrealGame")` 两张单都有（PIE 要用）
+
+---
+
+## 六、速查表 · 口诀
 
 | 三要素 | 值 |
 |---|---|
 | 读什么 | `Engine\Source\UnrealEditor.Target.cs`（16 行，C#） |
-| 建到哪 | `从零复刻ue5\Engine\Source\02_UnrealEditor.Target.cs_完整代码.md`（本文件） |
-| 谁用它 | `Programs\UnrealBuildTool\`，基类 `TargetRules.cs:528` |
-
-**使用场景速记**：编译 `UnrealEditor` → 读这张单；以后加自己的模块 → 往 `ExtraModuleNames` 里 `Add`；把 `Type` 改成 `Game` 就变成另一张单（但引擎是分成两个文件写的，我们不合并）。
+| 讲义 | `从零复刻ue5\Engine\Source\02_UnrealEditor.Target.cs_完整代码.md` |
+| 还原到哪 | `ue_5.6\Engine\Source\UnrealEditor.Target.cs` |
 
 **口诀**：**一张单、十六行；`Type=Editor` 定方向，全模块 `true` 是编辑器专属；`Latest` 顺序、`Shared` 环境、`Add("UnrealGame")` 两张单都一样；注释改中文，代码一个字不动。**
 
-**一句话白话总结**：这份文件就是给编译施工队的一张 16 行纸条，上面写着「这次盖编辑器，全编」，抄的时候连空格缩进都照抄，只把注释说成中国话、并在类和方法头顶补两行中文说明。
+---
+
+## 待确认
+
+1. 16 行看懂了吗？重点记 `Type = TargetType.Editor` 和 `bBuildAllModules = true`。
+2. 看完说「下一步」，我验收还原文件，通过后教 `UnrealGame.Target.cs`（17 行）。
+
+---
+
+## 源码依据
+
+- `D:\ue5\Epic Games\UE_5.6\Engine\Source\UnrealEditor.Target.cs`（16 行）
+- `D:\ue5\Epic Games\UE_5.6\Engine\Source\Programs\UnrealBuildTool\Configuration\TargetRules.cs`（`TargetType` 20、`TargetBuildEnvironment` 77、`EngineIncludeOrderVersion` 168、`Latest` 209、`TargetRules` 类 528、`Type` 681、`IncludeOrderVersion` 703、`bBuildAllModules` 788、`ExtraModuleNames` 2716、`BuildEnvironment` 2740）
+- `D:\ue5\Epic Games\UE_5.6\Engine\Source\Programs\UnrealBuildTool\Configuration\TargetInfo.cs`（`TargetInfo` 类 12）
