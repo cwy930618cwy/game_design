@@ -1,0 +1,22 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{75E03189-4420-80DE-EEF6-B28D8A05183D}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "texiaoue54",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		}
+	]
+}
