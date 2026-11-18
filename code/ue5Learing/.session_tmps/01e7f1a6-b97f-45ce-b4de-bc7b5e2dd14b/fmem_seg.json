@@ -1,0 +1,246 @@
+﻿{
+  "title": "# 23 — `HAL/FMemory.inl` 逐行注释版（超详细）",
+  "header": [
+    "> 依据：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FMemory.inl`（**252 行**）",
+    "> 你新建文件：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FMemory.inl`",
+    "> **⚠️ 本节不能独立编译**——`.inl` 是内联实现文件，必须被 `HAL/UnrealMemory.h` include。",
+    "> **注意**：这份是**讲解版**（每行代码上方都有中文注释），还原文件已按它生成。"
+  ],
+  "why": [
+    "`FMemory` 是 UE 的**内存分配门面**：`FMemory::Malloc` / `Realloc` / `Free` 是所有 `new` / `delete` 的最终落点。但它的**声明**在 `UnrealMemory.h`，**实现**在这个 `.inl` 文件里。",
+    "",
+    "**为什么用 `.inl` 而不是 `.cpp`？** 因为要**内联**。`Malloc` 被调用几百万次，函数调用开销不能忍。`.inl` 文件被 `UnrealMemory.h` 在末尾 include，编译器就能在每个编译单元里内联展开。",
+    "",
+    "**它实现了 6 个函数**：",
+    "",
+    "| 函数 | 作用 |",
+    "|---|---|",
+    "| `Malloc(Count, Alignment)` | 分配内存 |",
+    "| `Realloc(Original, Count, Alignment)` | 重新分配 |",
+    "| `Free(Original)` | 释放内存 |",
+    "| `GetAllocSize(Original)` | 取实际分配大小 |",
+    "| `MallocZeroed(Count, Alignment)` | 分配并清零 |",
+    "| `QuantizeSize(Count, Alignment)` | 把请求大小量化成分配器实际给的大小 |",
+    "",
+    "**两个关键设计**：",
+    "",
+    "**① 双路径**（每个函数都有）：",
+    "",
+    "```cpp",
+    "if (!FMEMORY_INLINE_GMalloc)   // 分配器还没初始化",
+    "    Alloc = MallocExternal(...);   // 走外部实现（通常是系统 malloc）",
+    "else",
+    "    Alloc = FMEMORY_INLINE_GMalloc->Malloc(...);  // 走 UE 的分配器",
+    "```",
+    "",
+    "**② AutoRTFM 事务内存支持**（这是本文件最复杂的地方）：",
+    "",
+    "| 宏 | 作用 |",
+    "|---|---|",
+    "| `AutoRTFM::Open(lambda)` | 在事务「打开」阶段执行（分配器本身是事务性的，提前调用可避免追踪内部写入） |",
+    "| `AutoRTFM::OnAbort(lambda)` | 事务回滚时执行（释放刚分配的内存） |",
+    "| `AutoRTFM::DidAllocate(Ptr, Count)` | 通知事务系统「分配了这块内存」 |",
+    "| `AutoRTFM::DidFree(Ptr)` | 通知事务系统「释放了这块内存」 |",
+    "| `UE_AUTORTFM_ONCOMMIT` | 事务**提交**时才执行（Free 延迟到提交） |",
+    "| `UE_AUTORTFM_OPEN` | 事务打开阶段执行 |",
+    "",
+    "> 🔑 **一句话**：`FMemory.inl` = **内存分配的「内联实现」**，双路径（外部/UE 分配器）+ AutoRTFM 事务支持。"
+  ],
+  "segments": [
+    {
+      "title": "一、版权头 + 2 个宏默认值 + include",
+      "start": 1,
+      "end": 15,
+      "new": [
+        "`FMEMORY_INLINE_FUNCTION_DECORATOR` —— 函数装饰器，默认空（可加 `FORCEINLINE`）",
+        "`FMEMORY_INLINE_GMalloc` —— 全局分配器，默认 `UE::Private::GMalloc`",
+        "`HAL/LowLevelMemTracker.h` —— `LLM_IF_ENABLED` / `LLM_REALLOC_SCOPE`",
+        "`AutoRTFM.h` —— 事务内存支持",
+        "`struct FMemory;` / `struct FScopedMallocTimer;` —— 前置声明"
+      ],
+      "rows": [
+        ["第 1 行", "版权头"],
+        ["第 3~5 行", "函数装饰器宏"],
+        ["第 7~9 行", "全局分配器宏"],
+        ["第 11~12 行", "2 个 include"],
+        ["第 14~15 行", "2 个前置声明"]
+      ],
+      "analogy": "像开工前定两个可调参数：函数怎么装饰、用哪个分配器。"
+    },
+    {
+      "title": "二、`FMemory::Malloc`",
+      "start": 17,
+      "end": 54,
+      "new": [
+        "`AutoRTFM::Open([Count, Alignment] { ... })` —— 在事务打开阶段执行分配",
+        "`FMEMORY_INLINE_GMalloc` —— 全局分配器指针（判空）",
+        "`MallocExternal(Count, Alignment)` —— 外部分配（分配器未初始化时）",
+        "`DoGamethreadHook(0)` —— 游戏线程钩子（参数 0 = Malloc）",
+        "`FScopedMallocTimer Timer(0)` —— 分配计时器（参数 0 = Malloc）",
+        "`LLM_IF_ENABLED(...)` —— 低层内存追踪（编译期可关）",
+        "`FLowLevelMemTracker::Get().OnLowLevelAlloc(...)` —— 记录分配",
+        "`AutoRTFM::OnAbort([Ptr] { Free(Ptr); })` —— 事务回滚时释放",
+        "`AutoRTFM::DidAllocate(Ptr, Count)` —— 通知事务系统并返回指针"
+      ],
+      "rows": [
+        ["第 17~18 行", "函数签名 + 开始"],
+        ["第 19~24 行", "AutoRTFM 说明注释"],
+        ["第 25~41 行", "`AutoRTFM::Open` lambda（双路径分配）"],
+        ["第 43~51 行", "`AutoRTFM::OnAbort` lambda（回滚释放）"],
+        ["第 53 行", "`DidAllocate` 返回"],
+        ["第 54 行", "函数结束"]
+      ],
+      "analogy": "像借钱：先记一笔（Open），如果对方反悔就还回去（OnAbort），最后登记入账（DidAllocate）。"
+    },
+    {
+      "title": "三、`FMemory::Realloc` 事务分支",
+      "start": 56,
+      "end": 105,
+      "new": [
+        "`AutoRTFM::IsClosed()` —— 是否处于事务代码里",
+        "**事务里 realloc 变成 Malloc + Memcpy + Free** —— 不能调底层 realloc（会释放旧内存，回滚后拿不回来）",
+        "`Count > 0` 才 Malloc —— 避免 Count=0 时实现定义行为",
+        "`GetAllocSize(Original)` —— 取原内存大小",
+        "`FGenericPlatformMath::Min(Count, OriginalCount)` —— 取较小值（新大小可能更小）",
+        "`Memcpy(Ptr, Original, CopyCount)` —— 拷贝数据",
+        "`Free(Original)` —— 释放原内存"
+      ],
+      "rows": [
+        ["第 56~58 行", "函数签名 + 事务判断"],
+        ["第 60~73 行", "为什么不能调底层 realloc（长注释）"],
+        ["第 75~89 行", "Count > 0 才 Malloc"],
+        ["第 91~102 行", "拷贝 + 释放原内存"],
+        ["第 104~105 行", "返回新指针"]
+      ],
+      "analogy": "像换房子：不能直接改造旧房（realloc 会拆掉），只能买新房（Malloc）+ 搬东西（Memcpy）+ 卖旧房（Free）。"
+    },
+    {
+      "title": "四、`FMemory::Realloc` 非事务分支",
+      "start": 107,
+      "end": 137,
+      "new": [
+        "`LLM_REALLOC_SCOPE(Original)` —— LLM 的 realloc 作用域",
+        "`OnLowLevelFree(...)` —— 先记录释放旧内存",
+        "`ReallocExternal(...)` —— 外部 realloc",
+        "`FMEMORY_INLINE_GMalloc->Realloc(...)` —— UE 分配器的 realloc",
+        "`DoGamethreadHook(1)` / `FScopedMallocTimer Timer(1)` —— 参数 1 = Realloc",
+        "`AutoRTFM::DidFree(Original)` —— 指针变了说明旧内存已释放",
+        "`OnLowLevelAlloc(...)` —— 记录新分配"
+      ],
+      "rows": [
+        ["第 107~110 行", "LLM 追踪"],
+        ["第 112~122 行", "双路径 realloc"],
+        ["第 124~129 行", "指针变了 → 通知事务系统"],
+        ["第 131~134 行", "记录新分配"],
+        ["第 136~137 行", "返回 + 结束"]
+      ],
+      "analogy": "像正常换房：直接找中介（realloc），一次搞定。"
+    },
+    {
+      "title": "五、`FMemory::Free`",
+      "start": 139,
+      "end": 166,
+      "new": [
+        "`if (!Original)` —— 空指针直接返回（但先记一次计时器）",
+        "`FScopedMallocTimer Timer(3)` —— 参数 3 = Free 空指针",
+        "`UE_AUTORTFM_ONCOMMIT` —— **事务提交时才真正释放**（回滚则保留）",
+        "`OnLowLevelFree(...)` —— 记录释放",
+        "`FreeExternal(Original)` —— 外部释放",
+        "`DoGamethreadHook(2)` / `FScopedMallocTimer Timer(2)` —— 参数 2 = Free",
+        "`AutoRTFM::DidFree(Original)` —— 通知事务系统"
+      ],
+      "rows": [
+        ["第 139~145 行", "空指针快速返回"],
+        ["第 147~150 行", "AutoRTFM 说明 + ONCOMMIT"],
+        ["第 152~159 行", "LLM 追踪 + 外部释放"],
+        ["第 160~165 行", "UE 分配器释放 + 通知"]
+      ],
+      "analogy": "像退租：不是立刻搬走，而是等合同正式生效（提交）才搬。"
+    },
+    {
+      "title": "六、`FMemory::GetAllocSize`",
+      "start": 168,
+      "end": 194,
+      "new": [
+        "`UE_AUTORTFM_OPEN { ... }` —— 事务打开阶段执行",
+        "`GetAllocSizeExternal(Original)` —— 外部实现",
+        "`FMEMORY_INLINE_GMalloc->GetAllocationSize(Original, Size)` —— 返回是否成功",
+        "`bGotSize ? Size : 0` —— 成功用大小，失败用 0",
+        "`checkf(bGotSize, TEXT(\"...\"))` —— 断言（只在事务代码里执行）",
+        "**为什么断言** —— AutoRTFM 要求分配器必须能返回正确大小"
+      ],
+      "rows": [
+        ["第 168~172 行", "函数签名 + OPEN 块"],
+        ["第 173~176 行", "外部实现"],
+        ["第 177~182 行", "UE 分配器实现"],
+        ["第 183~189 行", "事务里的断言"],
+        ["第 193~194 行", "返回 + 结束"]
+      ],
+      "analogy": "像问房东「这房子实际多大」：必须能答出来，否则事务系统没法工作。"
+    },
+    {
+      "title": "七、`FMemory::MallocZeroed`",
+      "start": 196,
+      "end": 233,
+      "new": [
+        "`void* Ptr = nullptr;` —— 先置空（消除静态分析误报）",
+        "`UE_AUTORTFM_OPEN { ... }` —— 事务打开阶段",
+        "`MallocZeroedExternal(...)` —— 外部清零分配",
+        "`FMEMORY_INLINE_GMalloc->MallocZeroed(...)` —— UE 分配器清零分配",
+        "`AutoRTFM::OnAbort([Ptr] { Free(Ptr); })` —— 回滚释放",
+        "`AutoRTFM::DidAllocate(Ptr, Count)` —— 通知并返回"
+      ],
+      "rows": [
+        ["第 196~198 行", "函数签名 + 置空"],
+        ["第 200~220 行", "OPEN 块（双路径清零分配）"],
+        ["第 222~230 行", "OnAbort 块"],
+        ["第 232~233 行", "DidAllocate + 结束"]
+      ],
+      "analogy": "像租新房还带保洁：Malloc 是租空房，MallocZeroed 是租完还帮你打扫干净。"
+    },
+    {
+      "title": "八、`FMemory::QuantizeSize`",
+      "start": 235,
+      "end": 252,
+      "new": [
+        "`QuantizeSize(Count, Alignment)` —— 把请求大小量化成分配器实际给的大小",
+        "`UE_AUTORTFM_OPEN { ... }` —— 事务打开阶段",
+        "`Result = Count` —— 没有分配器就直接返回请求大小",
+        "`FMEMORY_INLINE_GMalloc->QuantizeSize(...)` —— 问分配器实际给多少"
+      ],
+      "rows": [
+        ["第 235~239 行", "函数签名 + OPEN 块"],
+        ["第 240~243 行", "无分配器：直接返回"],
+        ["第 244~247 行", "有分配器：问它"],
+        ["第 250~251 行", "返回 + 结束"]
+      ],
+      "analogy": "像问「我要 100 块，你实际给我多少」：分配器按块大小给，可能给 128。"
+    }
+  ],
+  "syntax": [
+    ["`#if !defined(X)` / `#define X 值` / `#endif`", "外部没定义就给默认值", "`#if !defined(FMEMORY_INLINE_GMalloc)`"],
+    ["`[捕获列表] { ... }`", "lambda 表达式", "`AutoRTFM::Open([Count, Alignment] { ... })`"],
+    ["`X ? A : B`", "三元运算符", "`bGotSize ? Size : 0`"],
+    ["`checkf(cond, msg)`", "带消息的断言", "`checkf(bGotSize, TEXT(\"...\"))`"],
+    ["`UE_AUTORTFM_ONCOMMIT { ... };`", "事务提交时执行", "`UE_AUTORTFM_ONCOMMIT(=) { ... };`"],
+    ["`UE_AUTORTFM_OPEN { ... };`", "事务打开时执行", "`UE_AUTORTFM_OPEN { ... };`"],
+    ["`//-V575`", "PVS-Studio 静态分析抑制注释", "`Free(Ptr); //-V575`"]
+  ],
+  "diff": [
+    ["代码行", "252 行", "414 行", "多出的是每行上方的中文注释"],
+    ["非注释代码行", "161 行", "161 行", "**逐字一致**"],
+    ["注释语言", "英文", "中文", "全部译成中文"],
+    ["`//-V575`", "保留原文", "保留原文", "静态分析工具指令，不翻译"],
+    ["`TEXT(\"...\")` 字符串", "英文原文", "保留英文", "运行时字符串，不翻译"]
+  ],
+  "todo": [
+    "还原文件已生成：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FMemory.inl`（414 行）",
+    "脚本验收：`codeOurs=161 / codeEngine=161 / diff=0`",
+    "确认后下一个：`HAL\\HideTCHAR.h`（1331 字节）"
+  ],
+  "src": [
+    "引擎：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FMemory.inl`（252 行）",
+    "还原：`E:\\ue5\\game_design\\code\\ue5Learing\\ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FMemory.inl`（414 行）",
+    "总 md：`AI_Learning_Notes\\从零复刻ue5\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\10_FMemory.inl_总md.md`"
+  ]
+}

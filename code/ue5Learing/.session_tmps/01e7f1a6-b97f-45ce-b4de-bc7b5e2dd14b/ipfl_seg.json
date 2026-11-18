@@ -1,0 +1,364 @@
+﻿{
+  "title": "# 27 — `HAL/IPlatformFileLogWrapper.h` 逐行注释版（超详细）",
+  "header": [
+    "> 依据：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileLogWrapper.h`（**513 行**）",
+    "> 你新建文件：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileLogWrapper.h`",
+    "> **⚠️ 本节不能独立编译**——依赖 `IPlatformFile` / `IFileHandle` / `FScopeLock`。",
+    "> **注意**：这份是**讲解版**（每行代码上方都有中文注释），还原文件已按它生成。"
+  ],
+  "why": [
+    "游戏加载慢，你想知道「到底哪个文件读得最久」。`IPlatformFileLogWrapper.h` 就是**文件系统的「行车记录仪」**：它包住底层 `IPlatformFile`，把**每一次**文件操作都记进日志，还带上**耗时**。",
+    "",
+    "**它包含 4 个类 + 1 个宏**：",
+    "",
+    "| 类型 | 作用 |",
+    "|---|---|",
+    "| `FILE_LOG(...)` | **带防递归保护**的日志宏 |",
+    "| `FLoggedFileHandle` | 带日志的文件句柄（包住 `IFileHandle`） |",
+    "| `FLoggedPlatformFile` | 带日志的平台文件包装器（包住 `IPlatformFile`） |",
+    "| `FLogVisitor` | 带日志的目录访问者（包住 `FDirectoryVisitor`） |",
+    "| `FLogStatVisitor` | 带日志的 stat 访问者（包住 `FDirectoryStatVisitor`） |",
+    "",
+    "**核心设计 ①：防递归的 `FILE_LOG` 宏**（第 32~38 行）",
+    "",
+    "```cpp",
+    "#define FILE_LOG(CategoryName, Verbosity, Format, ...) \\",
+    "    if (!bSuppressFileLog) \\",
+    "    { \\",
+    "        bSuppressFileLog = true; \\      // ← 先置标志",
+    "        UE_LOG(CategoryName, Verbosity, Format, ##__VA_ARGS__); \\",
+    "        bSuppressFileLog = false; \\     // ← 再恢复",
+    "    }",
+    "```",
+    "",
+    "**为什么需要**：`UE_LOG` 内部可能写日志文件 → 触发 `FLoggedPlatformFile::OpenWrite` → 又打日志 → **无限递归**。`bSuppressFileLog` 就是那个「刹车」。",
+    "",
+    "**核心设计 ②：每个方法都是「三段式」**",
+    "",
+    "```cpp",
+    "FILE_LOG(...);                              // ① 记「开始」",
+    "double StartTime = FPlatformTime::Seconds(); // ② 记开始时间",
+    "bool Result = LowerLevel->Xxx(...);          // ③ 调底层",
+    "double ThisTime = (FPlatformTime::Seconds() - StartTime) / 1000.0;  // ④ 算耗时",
+    "FILE_LOG(... Result, ThisTime);              // ⑤ 记「结束 + 耗时」",
+    "return Result;",
+    "```",
+    "",
+    "**核心设计 ③：`SCOPED_NAMED_EVENT_FSTRING`**（第 191 行等）",
+    "",
+    "```cpp",
+    "FString DataStr = FString::Printf(TEXT(\"FileExists %s\"), Filename);",
+    "SCOPED_NAMED_EVENT_FSTRING(DataStr, FColor::Emerald);",
+    "```",
+    "",
+    "这会在 Unreal Insights / PIX 里打一个**命名事件**，让你在时间轴上直接看到「这次 FileExists 花了多久」。",
+    "",
+    "**核心设计 ④：打开句柄计数**（第 476~493 行，仅非 Shipping）",
+    "",
+    "```cpp",
+    "TMap<FString, int32> OpenHandles;   // 每个文件打开了几次",
+    "FCriticalSection LogFileCritical;   // 保护它的锁",
+    "```",
+    "",
+    "`OnHandleOpen` / `OnHandleClosed` 维护计数，`HandleDumpCommand` 是控制台命令，能打印「当前还有哪些文件没关」—— **查文件句柄泄漏的利器**。",
+    "",
+    "**说个场景**：",
+    "",
+    "```",
+    "控制台敲：LogFile.Dump",
+    "输出：",
+    "  OpenHandles:",
+    "    ../../../MyProject/Content/Map.umap : 2",
+    "    ../../../MyProject/Config/DefaultEngine.ini : 1",
+    "```",
+    "",
+    "> 🔑 **一句话**：`IPlatformFileLogWrapper.h` = **文件系统的「行车记录仪」**，每次操作都记日志 + 耗时 + 命名事件，还能查句柄泄漏。"
+  ],
+  "segments": [
+    {
+      "title": "一、版权头 + 14 个 include + 4 个前置声明",
+      "start": 1,
+      "end": 23,
+      "new": [
+        "`Containers/Map.h` —— `TMap<FString, int32>`（OpenHandles）",
+        "`Containers/UnrealString.h` —— `FString`",
+        "`CoreTypes.h` —— `uint8` / `int32` / `int64` / `TCHAR`",
+        "`GenericPlatform/GenericPlatformFile.h` —— `IPlatformFile` / `IFileHandle` / `FFileStatData`",
+        "`HAL/CriticalSection.h` —— `FCriticalSection`",
+        "`HAL/PlatformMisc.h` —— `FPlatformProperties`",
+        "`HAL/PlatformTime.h` —— `FPlatformTime::Seconds`",
+        "`Logging/LogCategory.h` —— `DECLARE_LOG_CATEGORY_EXTERN`",
+        "`Logging/LogMacros.h` —— `UE_LOG`",
+        "`Math/Color.h` —— `FColor::Emerald`",
+        "`Misc/DateTime.h` —— `FDateTime`",
+        "`Misc/ScopeLock.h` —— `FScopeLock`",
+        "`Templates/UniquePtr.h` —— `TUniquePtr<IFileHandle>`",
+        "`Trace/Detail/Channel.h` —— `SCOPED_NAMED_EVENT_FSTRING`",
+        "4 个前置声明 —— `FLoggedPlatformFile` / `FOutputDevice` / `IAsyncReadFileHandle` / `IMappedFileHandle`"
+      ],
+      "rows": [
+        ["第 1 行", "版权头"],
+        ["第 3 行", "头文件保护"],
+        ["第 5~18 行", "14 个 include"],
+        ["第 20~23 行", "4 个前置声明"]
+      ],
+      "analogy": "像开工前领 14 样工具：容器、字符串、类型、平台文件、锁、平台信息、时间、日志、颜色、时间戳、作用域锁、智能指针、追踪通道。"
+    },
+    {
+      "title": "二、日志分类 + `FILE_LOG` 防递归宏",
+      "start": 25,
+      "end": 40,
+      "new": [
+        "`DECLARE_LOG_CATEGORY_EXTERN(LogPlatformFile, Log, All)` —— 文件系统日志分类",
+        "`extern bool bSuppressFileLog` —— 是否抑制文件日志（防递归）",
+        "`FILE_LOG(CategoryName, Verbosity, Format, ...)` —— 带防递归保护的日志宏",
+        "`if (!bSuppressFileLog)` —— 只在没抑制时才打",
+        "`bSuppressFileLog = true` —— 先置标志（防止 UE_LOG 内部的文件操作再次触发）",
+        "`##__VA_ARGS__` —— 可变参数透传（GCC 扩展，空参数时去掉前面的逗号）",
+        "`bSuppressFileLog = false` —— 恢复标志"
+      ],
+      "rows": [
+        ["第 25~28 行", "日志分类声明"],
+        ["第 30 行", "`bSuppressFileLog` 全局标志"],
+        ["第 32~38 行", "`FILE_LOG` 宏（5 行）"],
+        ["第 40 行", "前置声明 `FLoggedPlatformFile`"]
+      ],
+      "analogy": "像录音时的「防啸叫」：喇叭一响就自动静音，避免自己录自己。"
+    },
+    {
+      "title": "三、`FLoggedFileHandle` 声明 + 成员",
+      "start": 42,
+      "end": 52,
+      "new": [
+        "`class FLoggedFileHandle : public IFileHandle` —— 带日志的文件句柄",
+        "`TUniquePtr<IFileHandle> FileHandle` —— 底层句柄（独占指针）",
+        "`FString Filename` —— 文件名（日志用）",
+        "`FLoggedPlatformFile& PlatformFile` —— 所属包装器（仅非 Shipping，用于统计句柄数）",
+        "`CORE_API FLoggedFileHandle(...)` —— 构造函数（实现在 .cpp）",
+        "`CORE_API virtual ~FLoggedFileHandle()` —— 析构函数（实现在 .cpp）"
+      ],
+      "rows": [
+        ["第 42~48 行", "类声明 + 3 个成员"],
+        ["第 49 行", "公有区"],
+        ["第 51 行", "构造函数声明"],
+        ["第 52 行", "析构函数声明"]
+      ],
+      "analogy": "像给水管装水表：进水管（FileHandle）、门牌号（Filename）、抄表员（PlatformFile）。"
+    },
+    {
+      "title": "四、`FLoggedFileHandle` 的 10 个方法（三段式）",
+      "start": 54,
+      "end": 142,
+      "new": [
+        "`Tell()` —— 返回当前读写位置",
+        "`Seek(NewPosition)` —— 跳转到指定位置",
+        "`SeekFromEnd(NewPositionRelativeToEnd)` —— 从末尾往前跳",
+        "`Read(Destination, BytesToRead)` —— 读数据",
+        "`ReadAt(Destination, BytesToRead, Offset)` —— 从指定偏移读",
+        "`Write(Source, BytesToWrite)` —— 写数据",
+        "`Size()` —— 返回文件大小（注意日志级别是 `Verbose` 不是 `VeryVerbose`）",
+        "`Flush(bFullFlush)` —— 刷新到磁盘（日志带 `full` / `partial`）",
+        "`Truncate(NewSize)` —— 截断文件",
+        "`ShrinkBuffers()` —— 收缩内部缓冲（无返回值）",
+        "**三段式**：`FILE_LOG` 开始 → `FPlatformTime::Seconds()` → 调底层 → 算耗时 → `FILE_LOG` 结束"
+      ],
+      "rows": [
+        ["第 54~62 行", "`Tell`"],
+        ["第 63~71 行", "`Seek`"],
+        ["第 72~80 行", "`SeekFromEnd`"],
+        ["第 81~89 行", "`Read`"],
+        ["第 90~98 行", "`ReadAt`"],
+        ["第 99~107 行", "`Write`"],
+        ["第 108~116 行", "`Size`"],
+        ["第 117~125 行", "`Flush`"],
+        ["第 126~134 行", "`Truncate`"],
+        ["第 135~142 行", "`ShrinkBuffers`"]
+      ],
+      "analogy": "像给每个动作都装秒表：开始按一下、结束按一下，中间干活。"
+    },
+    {
+      "title": "五、`FLoggedPlatformFile` 声明 + 成员 + 基础方法",
+      "start": 145,
+      "end": 186,
+      "new": [
+        "`class FLoggedPlatformFile : public IPlatformFile` —— 带日志的平台文件包装器",
+        "`IPlatformFile* LowerLevel` —— 被包装的下一层",
+        "`FCriticalSection LogFileCritical` —— 保护 `OpenHandles` 的锁（仅非 Shipping）",
+        "`TMap<FString, int32> OpenHandles` —— 每个文件打开了几次（仅非 Shipping）",
+        "`static GetTypeName()` —— 返回 `\"LogFile\"`",
+        "`FCriticalSection LogFileCritical` —— 保护 `OpenHandles` 的锁（仅非 Shipping）",
+        "`using IPlatformFile::IterateDirectory;` 等 4 个 —— 让基类重载可见",
+        "`ShouldBeUsed(...)` / `Initialize(...)` —— 实现在 .cpp",
+        "`GetLowerLevel()` / `SetLowerLevel(...)` / `GetName()` —— 3 个访问器"
+      ],
+      "rows": [
+        ["第 145~152 行", "类声明 + 3 个成员"],
+        ["第 154~158 行", "公有区 + `GetTypeName`"],
+        ["第 160~163 行", "默认构造"],
+        ["第 165~169 行", "4 个 `using`"],
+        ["第 171~173 行", "`ShouldBeUsed` / `Initialize`"],
+        ["第 175~186 行", "3 个访问器"]
+      ],
+      "analogy": "像给整栋楼装监控：每户（文件）进出都记录，还有一本总账（OpenHandles）。"
+    },
+    {
+      "title": "六、15 个文件操作（每个都是三段式 + 命名事件）",
+      "start": 188,
+      "end": 363,
+      "new": [
+        "`SCOPED_NAMED_EVENT_FSTRING(DataStr, FColor::Emerald)` —— 打命名事件（Insights / PIX 可见）",
+        "`FString::Printf(TEXT(\"Xxx %s\"), Filename)` —— 拼事件名",
+        "`FileExists` / `FileSize` / `DeleteFile` / `IsReadOnly` / `MoveFile` / `SetReadOnly` —— 6 个文件操作",
+        "`GetTimeStamp` / `SetTimeStamp` / `GetAccessTimeStamp` —— 3 个时间操作",
+        "`GetFilenameOnDisk` —— 1 个路径操作",
+        "`OpenRead` / `OpenWrite` —— 2 个打开操作（**包一层 `FLoggedFileHandle`**）",
+        "`DirectoryExists` / `CreateDirectory` / `DeleteDirectory` —— 3 个目录操作",
+        "`GetStatData` —— 1 个元数据操作",
+        "`Result ? (new FLoggedFileHandle(Result, Filename, *this)) : Result` —— 成功才包装"
+      ],
+      "rows": [
+        ["第 188~198 行", "`FileExists`"],
+        ["第 199~209 行", "`FileSize`"],
+        ["第 210~220 行", "`DeleteFile`"],
+        ["第 221~231 行", "`IsReadOnly`"],
+        ["第 232~242 行", "`MoveFile`"],
+        ["第 243~253 行", "`SetReadOnly`"],
+        ["第 254~264 行", "`GetTimeStamp`"],
+        ["第 265~274 行", "`SetTimeStamp`"],
+        ["第 275~285 行", "`GetAccessTimeStamp`"],
+        ["第 286~296 行", "`GetFilenameOnDisk`"],
+        ["第 297~307 行", "`OpenRead`（包一层）"],
+        ["第 308~318 行", "`OpenWrite`（包一层）"],
+        ["第 320~330 行", "`DirectoryExists`"],
+        ["第 331~341 行", "`CreateDirectory`"],
+        ["第 342~352 行", "`DeleteDirectory`"],
+        ["第 353~363 行", "`GetStatData`"]
+      ],
+      "analogy": "像给每个窗口都装摄像头：谁来办事、办多久，全录下来。"
+    },
+    {
+      "title": "七、`FLogVisitor` + 2 个 `IterateDirectory`",
+      "start": 365,
+      "end": 407,
+      "new": [
+        "`class FLogVisitor : public IPlatformFile::FDirectoryVisitor` —— 带日志的目录访问者",
+        "`FDirectoryVisitor& Visitor` —— 用户的访问者引用",
+        "`Visit(FilenameOrDirectory, bIsDirectory)` —— 访问一个文件或目录",
+        "`Visitor.CallShouldVisitAndVisit(...)` —— 先问 `ShouldVisit` 再 `Visit`",
+        "`IterateDirectory(Directory, Visitor)` —— 遍历单层目录（包一层 `FLogVisitor`）",
+        "`IterateDirectoryRecursively(Directory, Visitor)` —— 递归遍历"
+      ],
+      "rows": [
+        ["第 365~382 行", "`FLogVisitor` 内部类"],
+        ["第 384~395 行", "`IterateDirectory`"],
+        ["第 396~407 行", "`IterateDirectoryRecursively`"]
+      ],
+      "analogy": "像给门卫配个记录本：每个进出的人（文件）都记一笔。"
+    },
+    {
+      "title": "八、`FLogStatVisitor` + 2 个 `IterateDirectoryStat`",
+      "start": 409,
+      "end": 451,
+      "new": [
+        "`class FLogStatVisitor : public IPlatformFile::FDirectoryStatVisitor` —— 带日志的 stat 访问者",
+        "`FDirectoryStatVisitor& Visitor` —— 用户的 stat 访问者引用",
+        "`Visit(FilenameOrDirectory, StatData)` —— 访问一个文件或目录（带 stat 数据）",
+        "`IterateDirectoryStat(Directory, Visitor)` —— 遍历单层（带 stat）",
+        "`IterateDirectoryStatRecursively(Directory, Visitor)` —— 递归遍历（带 stat）"
+      ],
+      "rows": [
+        ["第 409~426 行", "`FLogStatVisitor` 内部类"],
+        ["第 428~439 行", "`IterateDirectoryStat`"],
+        ["第 440~451 行", "`IterateDirectoryStatRecursively`"]
+      ],
+      "analogy": "像门卫不仅记名字，还记身高体重（stat 数据）。"
+    },
+    {
+      "title": "九、`DeleteDirectoryRecursively` + `CopyFile`",
+      "start": 453,
+      "end": 474,
+      "new": [
+        "`DeleteDirectoryRecursively(Directory)` —— 递归删除目录",
+        "`CopyFile(To, From, ReadFlags, WriteFlags)` —— 复制文件"
+      ],
+      "rows": [
+        ["第 453~463 行", "`DeleteDirectoryRecursively`"],
+        ["第 464~474 行", "`CopyFile`"]
+      ],
+      "analogy": "同上，只是换了个动作。"
+    },
+    {
+      "title": "十、句柄计数（仅非 Shipping）",
+      "start": 476,
+      "end": 493,
+      "new": [
+        "`#if !UE_BUILD_SHIPPING` —— 只在非 Shipping 构建里编译",
+        "`OnHandleOpen(Filename)` —— 记录一次文件打开",
+        "`FScopeLock LogFileLock(&LogFileCritical)` —— 加锁保护 `OpenHandles`",
+        "`OpenHandles.FindOrAdd(Filename)` —— 找到或新建计数",
+        "`NumOpenHandles++` —— 计数 +1",
+        "`OnHandleClosed(Filename)` —— 记录一次文件关闭",
+        "`OpenHandles.FindChecked(Filename)` —— 取计数（必须存在）",
+        "`if (--NumOpenHandles == 0)` —— 减 1 后归零",
+        "`OpenHandles.Remove(Filename)` —— 从表里移除",
+        "`HandleDumpCommand(Cmd, Ar)` —— 控制台命令，打印当前打开的文件（实现在 .cpp）"
+      ],
+      "rows": [
+        ["第 476 行", "`#if !UE_BUILD_SHIPPING`"],
+        ["第 477~482 行", "`OnHandleOpen`"],
+        ["第 483~491 行", "`OnHandleClosed`"],
+        ["第 492 行", "`HandleDumpCommand`"],
+        ["第 493 行", "`#endif`"]
+      ],
+      "analogy": "像图书馆的借阅登记：借的时候 +1，还的时候 -1，归零就划掉。"
+    },
+    {
+      "title": "十一、`OpenAsyncRead` + `OpenMappedEx` + `SetAsyncMinimumPriority`",
+      "start": 494,
+      "end": 513,
+      "new": [
+        "`OpenAsyncRead(Filename, bAllowWrite)` —— 打开异步读（**不包装**，直接返回）",
+        "`//@todo no wrapped logging for async file handles (yet)` —— 引擎待办注释",
+        "`OpenMappedEx(Filename, OpenOptions, MaximumSize)` —— 打开映射文件（实现在 .cpp）",
+        "`SetAsyncMinimumPriority(MinPriority)` —— 设置异步 IO 最低优先级（纯转调）"
+      ],
+      "rows": [
+        ["第 494~505 行", "`OpenAsyncRead`"],
+        ["第 506 行", "`OpenMappedEx`"],
+        ["第 508~511 行", "`SetAsyncMinimumPriority`"],
+        ["第 513 行", "类结束"]
+      ],
+      "analogy": "像异步快递：还没装监控（待办），先直接放行。"
+    }
+  ],
+  "syntax": [
+    ["`#define X(...) \\`", "多行宏（反斜杠续行）", "`#define FILE_LOG(...) \\`"],
+    ["`##__VA_ARGS__`", "可变参数透传（GCC 扩展）", "`UE_LOG(Cat, Verb, Format, ##__VA_ARGS__)`"],
+    ["`extern bool X;`", "声明外部定义的全局量", "`extern bool bSuppressFileLog;`"],
+    ["`TUniquePtr<X>`", "独占智能指针", "`TUniquePtr<IFileHandle> FileHandle;`"],
+    ["`TMap<K, V>`", "哈希表", "`TMap<FString, int32> OpenHandles;`"],
+    ["`FScopeLock Lock(&Critical)`", "作用域锁（RAII）", "`FScopeLock LogFileLock(&LogFileCritical);`"],
+    ["`Map.FindOrAdd(Key)`", "找到或新建", "`OpenHandles.FindOrAdd(Filename)`"],
+    ["`Map.FindChecked(Key)`", "找到（不存在则断言）", "`OpenHandles.FindChecked(Filename)`"],
+    ["`SCOPED_NAMED_EVENT_FSTRING(Str, Color)`", "打命名事件", "`SCOPED_NAMED_EVENT_FSTRING(DataStr, FColor::Emerald);`"],
+    ["`X ? A : B`", "三元运算符", "`Result ? (new FLoggedFileHandle(...)) : Result`"],
+    ["`class X : public Y::Z`", "继承内部类", "`class FLogVisitor : public IPlatformFile::FDirectoryVisitor`"]
+  ],
+  "diff": [
+    ["代码行", "513 行", "992 行", "多出的是每行上方的中文注释"],
+    ["非注释代码行", "479 行", "479 行", "**逐字一致**"],
+    ["注释语言", "英文", "中文", "全部译成中文"],
+    ["`TEXT(\"...\")` 字符串", "英文原文", "保留英文", "运行时字符串，不翻译"],
+    ["`//@todo` 待办", "保留原文格式", "保留 `//@todo` + 中文说明", "待办标记，保留可搜索性"]
+  ],
+  "todo": [
+    "还原文件已生成：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileLogWrapper.h`（992 行）",
+    "脚本验收：`codeOurs=479 / codeEngine=479 / diff=0`",
+    "确认后下一个：`HAL\\IPlatformFileManagedStorageWrapper.h`（31770 字节）"
+  ],
+  "src": [
+    "引擎：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileLogWrapper.h`（513 行）",
+    "还原：`E:\\ue5\\game_design\\code\\ue5Learing\\ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileLogWrapper.h`（992 行）",
+    "总 md：`AI_Learning_Notes\\从零复刻ue5\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\14_IPlatformFileLogWrapper.h_总md.md`"
+  ]
+}

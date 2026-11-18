@@ -1,0 +1,34 @@
+{
+  "pre": {
+    "3": "// 头文件防重复包含：同一编译单元里多次 include 只展开一次。",
+    "5": "// 引入平台互斥量：FPlatformSharedMutex / FPlatformRecursiveMutex / FPlatformSystemWideMutex 都来自这里。",
+    "7": "// 命名空间 UE：引擎新版公共 API 都放这里。",
+    "13": "// FPlatformRWLock：读写锁适配器，final 表示不允许再被继承。",
+    "15": "// 公有区：对外暴露 6 个加解锁方法。",
+    "16": "// 尝试获取写锁：成功返回 true，失败返回 false（不阻塞）。",
+    "18": "// 转调底层互斥量的 TryLock。",
+    "21": "// 获取写锁：拿不到就阻塞等待。",
+    "23": "// 转调底层互斥量的 Lock。",
+    "26": "// 释放写锁。",
+    "28": "// 转调底层互斥量的 Unlock。",
+    "31": "// 尝试获取读锁：成功返回 true，失败返回 false（不阻塞）。",
+    "33": "// 转调底层互斥量的 TryLockShared。",
+    "36": "// 获取读锁：拿不到就阻塞等待。",
+    "38": "// 转调底层互斥量的 LockShared。",
+    "41": "// 释放读锁。",
+    "43": "// 转调底层互斥量的 UnlockShared。",
+    "46": "// 私有区：底层互斥量本体。",
+    "47": "// FPlatformSharedMutex：平台共享互斥量（读写锁的底层实现）。",
+    "52": "// 说明：FCriticalSection 的别名定义，支持递归加锁，可能不公平。",
+    "53": "// FCriticalSection：递归互斥量别名（同一线程可重复加锁）。",
+    "55": "// 说明：FRWLock 的别名定义，不支持递归加锁，可能不公平。",
+    "56": "// FRWLock：读写锁别名（多读单写）。",
+    "58": "// 说明：FSystemWideCriticalSection 的别名定义，跨进程互斥，不支持递归加锁。",
+    "59": "// FSystemWideCriticalSection：系统级（跨进程）互斥量别名。"
+  },
+  "rep": {
+    "1": "// 版权所有 Epic Games, Inc. 保留所有权利。",
+    "11": " * 把 FPlatformSharedMutex 适配成 FRWLock 期望的 API。",
+    "50": "} // UE（命名空间结束）"
+  }
+}

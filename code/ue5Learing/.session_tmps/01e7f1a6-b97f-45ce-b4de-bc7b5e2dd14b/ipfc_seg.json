@@ -1,0 +1,379 @@
+﻿{
+  "title": "# 26 — `HAL/IPlatformFileCachedWrapper.h` 逐行注释版（超详细）",
+  "header": [
+    "> 依据：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileCachedWrapper.h`（**468 行**）",
+    "> 你新建文件：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileCachedWrapper.h`",
+    "> **⚠️ 本节不能独立编译**——依赖 `IPlatformFile` / `IFileHandle` / `FOpenMappedResult`。",
+    "> **注意**：这份是**讲解版**（每行代码上方都有中文注释），还原文件已按它生成。"
+  ],
+  "why": [
+    "读文件时，如果每次 `Read(1 字节)` 都真的去问操作系统，系统调用开销会吃掉全部性能。解法是**加一层缓存**：一次读 64KB 到内存，之后的小读全从内存拿。",
+    "",
+    "`IPlatformFileCachedWrapper.h` 就是这层缓存，它包含两个类：",
+    "",
+    "| 类 | 作用 |",
+    "|---|---|",
+    "| `FCachedFileHandle` | **带缓存的文件句柄**（包住底层 `IFileHandle`） |",
+    "| `FCachedReadPlatformFile` | **带缓存的平台文件包装器**（包住底层 `IPlatformFile`） |",
+    "",
+    "**核心设计：双缓存槽轮转**",
+    "",
+    "```",
+    "BufferCache[2][64KB]     ← 2 个 64KB 缓存块",
+    "CacheStart[2]            ← 每块的起始文件位置",
+    "CacheEnd[2]              ← 每块的结束文件位置",
+    "CurrentCache             ← 当前正在填的槽（0 或 1，轮转）",
+    "```",
+    "",
+    "**为什么是 2 个槽**：读小块时，如果只用一个槽，每次跨块都要重新填。用 2 个槽轮转，可以「一边用旧块、一边填新块」，减少重填次数。",
+    "",
+    "**两个位置的区别**（这是本文件最容易搞混的地方）：",
+    "",
+    "| 成员 | 含义 |",
+    "|---|---|",
+    "| `FilePos` | **逻辑位置** —— 调用方以为自己在哪 |",
+    "| `TellPos` | **底层实际位置** —— 底层句柄真正在哪 |",
+    "",
+    "因为缓存的存在，两者可能不同。比如 `FilePos = 100`，但底层已经读到 `65536`（因为整块读进缓存了）。",
+    "",
+    "**说个场景**：",
+    "",
+    "```cpp",
+    "IFileHandle* H = File.OpenRead(\"Data.bin\");   // 返回 FCachedFileHandle",
+    "H->Read(&Byte, 1);   // 第一次：底层读 64KB 到缓存，返回第 1 字节",
+    "H->Read(&Byte, 1);   // 第二次：直接从缓存拿，零系统调用",
+    "```",
+    "",
+    "**`ShouldBeUsed` 的启用条件**（第 289~316 行）：",
+    "",
+    "```cpp",
+    "bResult = !bPlatformProvidesFileCache   // 平台自己没缓存",
+    "       && !bPlatformWindows             // 不是 Windows",
+    "       && FPlatformProperties::RequiresCookedData();  // 需要 cook 数据",
+    "```",
+    "",
+    "桌面平台可以用命令行 `-CachedReadFile` / `-NoCachedReadFile` 强制开关。",
+    "",
+    "> 🔑 **一句话**：`IPlatformFileCachedWrapper.h` = **文件读的「预读缓冲」**，一次读 64KB，之后小读全走内存。"
+  ],
+  "segments": [
+    {
+      "title": "一、版权头 + 14 个 include",
+      "start": 1,
+      "end": 20,
+      "new": [
+        "`CoreTypes.h` —— `uint8` / `uint32` / `int32` / `int64` / `TCHAR`",
+        "`Misc/AssertionMacros.h` —— `check`",
+        "`HAL/UnrealMemory.h` —— `FMemory::Memcpy`",
+        "`Templates/UnrealTemplate.h` —— `MoveTemp` 等",
+        "`Math/UnrealMathUtility.h` —— `FMath::Min` / `FMath::Max`",
+        "`Serialization/Archive.h` —— `FArchive`",
+        "`Containers/UnrealString.h` —— `FString`",
+        "`Misc/Parse.h` —— `FParse::Param`",
+        "`Logging/LogMacros.h` —— `UE_LOG`",
+        "`Misc/DateTime.h` —— `FDateTime`",
+        "`GenericPlatform/GenericPlatformFile.h` —— `IPlatformFile` / `IFileHandle` / `FFileStatData`",
+        "`HAL/IPlatformFileLogWrapper.h` —— `LogPlatformFile` 日志分类",
+        "`Templates/UniquePtr.h` —— `TUniquePtr<IFileHandle>`",
+        "`Async/MappedFileHandle.h` —— `FOpenMappedResult`",
+        "`class IAsyncReadFileHandle;` —— 前置声明"
+      ],
+      "rows": [
+        ["第 1 行", "版权头"],
+        ["第 3 行", "头文件保护"],
+        ["第 5~18 行", "14 个 include"],
+        ["第 20 行", "前置声明"]
+      ],
+      "analogy": "像开工前领 14 样工具：类型、断言、内存、模板、数学、归档、字符串、解析、日志、时间、平台文件、日志包装、智能指针、映射文件。"
+    },
+    {
+      "title": "二、`FCachedFileHandle` 构造 + 析构",
+      "start": 22,
+      "end": 39,
+      "new": [
+        "`class FCachedFileHandle : public IFileHandle` —— 带缓存的文件句柄",
+        "`FCachedFileHandle(IFileHandle*, bInReadable, bInWritable)` —— 构造函数",
+        "`FileHandle(InFileHandle)` —— 保存底层句柄",
+        "`FilePos(InFileHandle->Tell())` —— 逻辑位置取底层当前 Tell",
+        "`TellPos(FilePos)` —— 底层实际位置同步",
+        "`FileSize(InFileHandle->Size())` —— 文件大小取底层 Size",
+        "`CurrentCache(0)` —— 当前缓存槽从 0 开始",
+        "`FlushCache()` —— 清空缓存（把 CacheStart / CacheEnd 置 -1）",
+        "`virtual ~FCachedFileHandle()` —— 虚析构（空，`TUniquePtr` 自动释放底层句柄）"
+      ],
+      "rows": [
+        ["第 22~24 行", "类声明 + 公有区"],
+        ["第 25~35 行", "构造函数（7 个初始化 + 清缓存）"],
+        ["第 37~39 行", "虚析构"]
+      ],
+      "analogy": "像给旧水管装个水箱：进水管（底层句柄）接好，水箱（缓存）先清空。"
+    },
+    {
+      "title": "三、`Tell` / `Seek` / `SeekFromEnd`",
+      "start": 42,
+      "end": 60,
+      "new": [
+        "`Tell()` —— 返回 `FilePos`（逻辑位置，不是底层实际位置）",
+        "`Seek(NewPosition)` —— 越界检查（负数 / 超过文件大小）+ 更新 `FilePos`",
+        "`SeekFromEnd(NewPositionRelativeToEnd)` —— 换算成绝对位置再调 `Seek`"
+      ],
+      "rows": [
+        ["第 42~45 行", "`Tell`"],
+        ["第 47~55 行", "`Seek`（越界检查）"],
+        ["第 57~60 行", "`SeekFromEnd`"]
+      ],
+      "analogy": "像看书签：Tell 是「现在第几页」，Seek 是「翻到第 N 页」，SeekFromEnd 是「从最后往前数 N 页」。"
+    },
+    {
+      "title": "四、`Read` —— 核心缓存逻辑",
+      "start": 62,
+      "end": 137,
+      "new": [
+        "`Read(Destination, BytesToRead)` —— 读数据（带缓存）",
+        "**前置检查**：不可读 / 负数 / 越界 → false",
+        "**读 0 字节** → 直接 true",
+        "**大块读**（`BytesToRead > BufferCacheSize`）：先把缓存剩余部分拷出去，再直读底层",
+        "**小块读**（走缓存）：循环直到读完",
+        "`GetCacheIndex(FilePos)` —— 查位置落在哪个缓存槽",
+        "`CacheIndex > CacheCount` —— 缓存未命中，需要填新块",
+        "`FilePos & BufferSizeMask` —— 把位置对齐到 64KB 边界",
+        "`FMath::Min<uint64>(BufferCacheSize, FileSize-AlignedFilePos)` —— 要读多少（不超过文件末尾）",
+        "`InnerSeek(AlignedFilePos)` + `InnerRead(BufferCache[CurrentCache], SizeToRead)` —— 读一整块到缓存",
+        "`CurrentCache++` / `CurrentCache %= CacheCount` —— 轮转到下一个槽",
+        "`CA_ASSUME(CacheIndex < CacheCount)` —— 告诉静态分析器索引一定有效",
+        "`FMath::Min<uint64>(BytesToRead, CacheEnd[CacheIndex]-FilePos)` —— 实际能拷多少",
+        "`FMemory::Memcpy(...)` —— 从缓存拷到目标"
+      ],
+      "rows": [
+        ["第 62~72 行", "前置检查 + 0 字节快速返回"],
+        ["第 74~96 行", "大块读分支（先拷缓存剩余 + 直读底层）"],
+        ["第 97~135 行", "小块读分支（循环走缓存）"],
+        ["第 103~121 行", "缓存未命中 → 填新块 + 轮转"],
+        ["第 123~133 行", "从缓存拷到目标"],
+        ["第 136~137 行", "返回结果"]
+      ],
+      "analogy": "像喝水：大杯（大块读）直接从水桶倒，小口（小块读）从杯子（缓存）喝，杯子空了才去水桶续。"
+    },
+    {
+      "title": "五、`ReadAt` / `Write` / `Size` / `Flush` / `Truncate` / `ShrinkBuffers`",
+      "start": 139,
+      "end": 201,
+      "new": [
+        "`ReadAt(Destination, BytesToRead, Offset)` —— 从指定偏移读（**不走缓存**，直接转底层）",
+        "`Write(Source, BytesToWrite)` —— 写数据（写后 `FlushCache()` + 更新 `FileSize`）",
+        "`FMath::Max<int64>(FilePos, FileSize)` —— 文件大小取较大值（可能扩展了文件）",
+        "`Size()` —— 返回 `FileSize`",
+        "`Flush(bFullFlush)` —— 只有可写才转调底层",
+        "`Truncate(NewSize)` —— 截断后清缓存 + 重新同步位置和大小",
+        "`ShrinkBuffers()` —— 转调底层"
+      ],
+      "rows": [
+        ["第 139~143 行", "`ReadAt`（不走缓存）"],
+        ["第 145~167 行", "`Write`（写后清缓存）"],
+        ["第 169~172 行", "`Size`"],
+        ["第 174~181 行", "`Flush`"],
+        ["第 183~196 行", "`Truncate`"],
+        ["第 198~201 行", "`ShrinkBuffers`"]
+      ],
+      "analogy": "像写作业：写完要擦掉草稿（清缓存），本子变厚了要更新页数（FileSize）。"
+    },
+    {
+      "title": "六、私有常量 + 4 个辅助函数",
+      "start": 203,
+      "end": 248,
+      "new": [
+        "`static constexpr uint32 BufferCacheSize = 64 * 1024` —— 每个缓存块 64KB（引擎注释说是性能最佳值）",
+        "`static constexpr uint64 BufferSizeMask = ~((uint64)BufferCacheSize-1)` —— 对齐掩码",
+        "`static constexpr uint32 CacheCount = 2` —— 缓存槽数量（2 个轮转）",
+        "`InnerSeek(Pos)` —— 底层跳转（**带位置缓存优化**：位置相同就跳过系统调用）",
+        "`InnerRead(Dest, BytesToRead)` —— 底层读（带 `TellPos` 更新）",
+        "`GetCacheIndex(Pos)` —— 查位置落在哪个槽（遍历 `CacheStart` / `CacheEnd`）",
+        "`FlushCache()` —— 把所有槽的起止置 -1（表示空）"
+      ],
+      "rows": [
+        ["第 203~207 行", "3 个编译期常量"],
+        ["第 209~221 行", "`InnerSeek`（位置缓存优化）"],
+        ["第 222~230 行", "`InnerRead`"],
+        ["第 231~241 行", "`GetCacheIndex`"],
+        ["第 242~248 行", "`FlushCache`"]
+      ],
+      "analogy": "像仓库管理员的四个工具：量尺（常量）、找货（InnerSeek）、取货（InnerRead）、查货架（GetCacheIndex）、清仓（FlushCache）。"
+    },
+    {
+      "title": "七、10 个成员变量",
+      "start": 250,
+      "end": 260,
+      "new": [
+        "`TUniquePtr<IFileHandle> FileHandle` —— 底层文件句柄（独占指针，自动释放）",
+        "`int64 FilePos` —— **逻辑位置**（可能和底层实际位置不同，因为有缓存）",
+        "`int64 TellPos` —— **底层实际位置**（可能和逻辑位置不同）",
+        "`int64 FileSize` —— 文件大小",
+        "`bool bWritable` / `bool bReadable` —— 读写权限",
+        "`uint8 BufferCache[2][64KB]` —— 2 个 64KB 缓存块",
+        "`int64 CacheStart[2]` / `int64 CacheEnd[2]` —— 每块的起止文件位置",
+        "`int32 CurrentCache` —— 当前正在填的槽索引"
+      ],
+      "rows": [
+        ["第 250 行", "底层句柄"],
+        ["第 251~253 行", "3 个位置/大小"],
+        ["第 254~255 行", "2 个权限标志"],
+        ["第 256~259 行", "缓存相关 4 个"],
+        ["第 260 行", "类结束"]
+      ],
+      "analogy": "像水箱的仪表盘：进水管（FileHandle）、水位（FilePos）、实际水位（TellPos）、容量（FileSize）、两个水箱（BufferCache）。"
+    },
+    {
+      "title": "八、`FCachedReadPlatformFile` 声明 + 类型名 + 构造",
+      "start": 262,
+      "end": 280,
+      "new": [
+        "`class FCachedReadPlatformFile : public IPlatformFile` —— 带读缓存的平台文件包装器",
+        "`IPlatformFile* LowerLevel` —— 被包装的下一层平台文件",
+        "`static GetTypeName()` —— 返回 `\"CachedReadFile\"`",
+        "`FCachedReadPlatformFile()` —— 默认构造（`LowerLevel` 置空）",
+        "`using IPlatformFile::IterateDirectory;` 等 4 个 —— **让基类重载可见**（否则会被隐藏）"
+      ],
+      "rows": [
+        ["第 262~265 行", "类声明 + 成员"],
+        ["第 266~269 行", "`GetTypeName`"],
+        ["第 271~274 行", "默认构造"],
+        ["第 276~280 行", "4 个 `using`"]
+      ],
+      "analogy": "像给水管装个转接头：外面看还是水管（IPlatformFile），里面多了一层过滤（缓存）。"
+    },
+    {
+      "title": "九、`Initialize` + `ShouldBeUsed`（启用条件）",
+      "start": 282,
+      "end": 316,
+      "new": [
+        "`Initialize(Inner, CommandLineParam)` —— 保存下一层（`Inner` 必需）",
+        "`check(Inner != nullptr)` —— 断言 `Inner` 非空",
+        "`ShouldBeUsed(Inner, CmdLine)` —— 判断是否启用本包装器",
+        "`PLATFORM_PROVIDES_FILE_CACHE` —— 平台是否自带文件缓存（默认 0）",
+        "`PLATFORM_WINDOWS` —— 是否 Windows",
+        "`FPlatformProperties::RequiresCookedData()` —— 是否需要 cook 数据",
+        "`FParse::Param(CmdLine, TEXT(\"NoCachedReadFile\"))` —— 命令行关闭",
+        "`FParse::Param(CmdLine, TEXT(\"CachedReadFile\"))` —— 命令行开启",
+        "`UE_LOG(LogPlatformFile, Verbose, ...)` —— 打日志"
+      ],
+      "rows": [
+        ["第 282~288 行", "`Initialize`"],
+        ["第 289~293 行", "`PLATFORM_PROVIDES_FILE_CACHE` 默认值"],
+        ["第 294~297 行", "启用条件计算"],
+        ["第 299~301 行", "桌面平台命令行开关"],
+        ["第 303~313 行", "解析命令行 + 打日志"],
+        ["第 315~316 行", "返回结果"]
+      ],
+      "analogy": "像门卫判断要不要开空调：平台自己有空调（自带缓存）就不开，Windows 也不开，只有需要 cook 数据时才开。"
+    },
+    {
+      "title": "十、`GetLowerLevel` / `SetLowerLevel` / `GetName` + 10 个纯转调",
+      "start": 317,
+      "end": 368,
+      "new": [
+        "`GetLowerLevel()` —— 取下一层平台文件",
+        "`SetLowerLevel(NewLowerLevel)` —— 设置下一层",
+        "`GetName()` —— 返回类型名",
+        "`FileExists` / `FileSize` / `DeleteFile` / `IsReadOnly` / `MoveFile` / `SetReadOnly` —— 6 个纯转调",
+        "`GetTimeStamp` / `SetTimeStamp` / `GetAccessTimeStamp` —— 3 个时间转调",
+        "`GetFilenameOnDisk` —— 1 个路径转调"
+      ],
+      "rows": [
+        ["第 317~328 行", "3 个访问器"],
+        ["第 329~352 行", "6 个文件操作转调"],
+        ["第 353~364 行", "3 个时间转调"],
+        ["第 365~368 行", "`GetFilenameOnDisk`"]
+      ],
+      "analogy": "像传话：外面问什么，直接转给下一层，自己不加料。"
+    },
+    {
+      "title": "十一、`OpenRead` / `OpenWrite` —— 包一层缓存句柄",
+      "start": 369,
+      "end": 386,
+      "new": [
+        "`OpenRead(Filename, bAllowWrite)` —— 打开读，返回 `FCachedFileHandle`（可读不可写）",
+        "`OpenWrite(Filename, bAppend, bAllowRead)` —— 打开写，返回 `FCachedFileHandle`（可写，读权限跟随参数）",
+        "`new FCachedFileHandle(InnerHandle, true, false)` —— 包一层（读模式）",
+        "`new FCachedFileHandle(InnerHandle, bAllowRead, true)` —— 包一层（写模式）",
+        "**打开失败返回 `nullptr`** —— 不包空句柄"
+      ],
+      "rows": [
+        ["第 369~377 行", "`OpenRead`"],
+        ["第 378~386 行", "`OpenWrite`"]
+      ],
+      "analogy": "像给水管装水表：打开时自动装上（包一层），之后每次用水都经过它（走缓存）。"
+    },
+    {
+      "title": "十二、8 个目录转调 + `FindFiles` ×2",
+      "start": 387,
+      "end": 426,
+      "new": [
+        "`DirectoryExists` / `CreateDirectory` / `DeleteDirectory` —— 3 个目录转调",
+        "`GetStatData` —— 元数据转调",
+        "`IterateDirectory` / `IterateDirectoryRecursively` / `IterateDirectoryStat` / `IterateDirectoryStatRecursively` —— 4 个遍历转调",
+        "`FindFiles(FoundFiles, Directory, FileExtension)` —— **没有 `override`**（引擎原文如此）",
+        "`FindFilesRecursively(...)` —— **没有 `override`**（引擎原文如此）"
+      ],
+      "rows": [
+        ["第 387~402 行", "4 个目录/元数据转调"],
+        ["第 403~418 行", "4 个遍历转调"],
+        ["第 419~422 行", "`FindFiles`（无 override）"],
+        ["第 423~426 行", "`FindFilesRecursively`（无 override）"]
+      ],
+      "analogy": "像目录查询台：问什么答什么，全部转给下一层。"
+    },
+    {
+      "title": "十三、4 个复制/建树转调 + 3 个路径/消息转调 + 3 个异步转调",
+      "start": 427,
+      "end": 468,
+      "new": [
+        "`DeleteDirectoryRecursively` —— 递归删除转调",
+        "`CopyFile(To, From, ReadFlags, WriteFlags)` —— 复制文件转调",
+        "`CreateDirectoryTree` / `CopyDirectoryTree` —— 建树/复制树转调",
+        "`ConvertToAbsolutePathForExternalAppForRead` / `ForWrite` —— 2 个路径转换转调",
+        "`SendMessageToServer(Message, Handler)` —— 服务器消息转调",
+        "`OpenAsyncRead(Filename, bAllowWrite)` —— 异步读转调",
+        "`OpenMappedEx(Filename, OpenOptions, MaximumSize)` —— 映射文件转调",
+        "`SetAsyncMinimumPriority(MinPriority)` —— 异步优先级转调"
+      ],
+      "rows": [
+        ["第 427~442 行", "4 个复制/建树转调"],
+        ["第 443~454 行", "3 个路径/消息转调"],
+        ["第 455~466 行", "3 个异步转调"],
+        ["第 468 行", "类结束"]
+      ],
+      "analogy": "像总机转接：所有电话都转给下一层，自己只负责「读」这一件事。"
+    }
+  ],
+  "syntax": [
+    ["`class X : public Y`", "继承", "`class FCachedFileHandle : public IFileHandle`"],
+    ["`static constexpr uint32 X = 值`", "编译期常量", "`static constexpr uint32 BufferCacheSize = 64 * 1024;`"],
+    ["`T X[N][M]`", "二维数组", "`uint8 BufferCache[CacheCount][BufferCacheSize];`"],
+    ["`X & Mask`", "位与（对齐）", "`FilePos & BufferSizeMask`"],
+    ["`X %= N`", "取模回绕", "`CurrentCache %= CacheCount;`"],
+    ["`FMath::Min<uint64>(A, B)`", "模板版取小", "`FMath::Min<uint64>(BufferCacheSize, FileSize-AlignedFilePos)`"],
+    ["`CA_ASSUME(cond)`", "告诉静态分析器条件成立", "`CA_ASSUME(CacheIndex < CacheCount);`"],
+    ["`using Base::Method;`", "让基类重载可见", "`using IPlatformFile::IterateDirectory;`"],
+    ["`FParse::Param(CmdLine, TEXT(\"X\"))`", "解析命令行开关", "`FParse::Param(CmdLine, TEXT(\"CachedReadFile\"))`"],
+    ["`UE_LOG(Category, Verbosity, Format, ...)`", "打日志", "`UE_LOG(LogPlatformFile, Verbose, TEXT(\"%s cached read wrapper\"), ...)`"],
+    ["`TUniquePtr<X>`", "独占智能指针", "`TUniquePtr<IFileHandle> FileHandle;`"]
+  ],
+  "diff": [
+    ["代码行", "468 行", "900 行", "多出的是每行上方的中文注释"],
+    ["非注释代码行", "421 行", "421 行", "**逐字一致**"],
+    ["注释语言", "英文", "中文", "全部译成中文"],
+    ["行内块注释 `/* */`", "英文原文", "中文", "已译"],
+    ["`FindFiles` 无 `override`", "引擎原文如此", "照抄不改", "引擎遗漏，不补"],
+    ["`TEXT(\"...\")` 字符串", "英文原文", "保留英文", "运行时字符串，不翻译"]
+  ],
+  "todo": [
+    "还原文件已生成：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileCachedWrapper.h`（900 行）",
+    "脚本验收：`codeOurs=421 / codeEngine=421 / diff=0`",
+    "确认后下一个：`HAL\\IPlatformFileLogWrapper.h`（22959 字节）"
+  ],
+  "src": [
+    "引擎：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileCachedWrapper.h`（468 行）",
+    "还原：`E:\\ue5\\game_design\\code\\ue5Learing\\ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileCachedWrapper.h`（900 行）",
+    "总 md：`AI_Learning_Notes\\从零复刻ue5\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\13_IPlatformFileCachedWrapper.h_总md.md`"
+  ]
+}

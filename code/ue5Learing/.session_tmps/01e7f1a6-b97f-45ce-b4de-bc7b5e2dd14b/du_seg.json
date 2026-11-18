@@ -1,0 +1,255 @@
+﻿{
+  "title": "# 17 — `HAL/DiskUtilizationTracker.h` 逐行注释版（超详细）",
+  "header": [
+    "> 依据：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\DiskUtilizationTracker.h`（**169 行**）",
+    "> 你新建文件：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\DiskUtilizationTracker.h`",
+    "> **✅ 本节可独立编译**——只 include `CoreTypes.h`（追踪开启时再加 3 个）。",
+    "> **注意**：这份是**讲解版**（每行代码上方都有中文注释），还原文件已按它生成。"
+  ],
+  "why": [
+    "加载游戏时磁盘是瓶颈。你想知道「磁盘到底忙不忙、读得多快、有多少时间在空转」，就需要一个**磁盘利用率追踪器**。",
+    "",
+    "`DiskUtilizationTracker.h` 提供：",
+    "",
+    "1. **`FDiskUtilizationTracker`** —— 追踪器本体，统计读取次数、字节数、寻道距离、IO 时间、空闲时间",
+    "2. **`UtilizationStats`** —— 一组统计数据 + 8 个计算函数（吞吐率、空闲占比…）",
+    "3. **`FScopedDiskUtilizationTracker`** —— RAII 作用域，构造时 `StartRead()`、析构时 `FinishRead()`",
+    "",
+    "**说个场景**：你在异步加载代码里写",
+    "",
+    "```cpp",
+    "FScopedDiskUtilizationTracker Tracker(BytesRead, SeekDistance);",
+    "// ... 读文件 ...",
+    "// 出作用域自动 FinishRead()，统计自动累加",
+    "```",
+    "",
+    "**关键设计**：整个文件被 `#if TRACK_DISK_UTILIZATION` 包住。**默认关闭**（第 6 行 `#define TRACK_DISK_UTILIZATION 0`），关闭时 `FScopedDiskUtilizationTracker` 变成**空壳**（第 162~167 行），构造函数什么都不做 —— 零开销。",
+    "",
+    "> 🔑 **一句话**：`DiskUtilizationTracker.h` = **磁盘的「行车记录仪」**，默认不装（零开销），需要时打开开关就能记录读写吞吐。"
+  ],
+  "segments": [
+    {
+      "title": "一、开关宏 + include",
+      "start": 1,
+      "end": 9,
+      "new": [
+        "`TRACK_DISK_UTILIZATION` —— 是否追踪磁盘利用率，默认 0（关闭）",
+        "`#ifndef X` / `#define X 0` / `#endif` —— 「外部没定义就给默认值」的标准写法",
+        "`CoreTypes.h` —— `uint32` / `uint64` / `int32`"
+      ],
+      "rows": [
+        ["第 1 行", "版权头"],
+        ["第 3 行", "头文件保护"],
+        ["第 5~7 行", "TRACK_DISK_UTILIZATION 默认 0"],
+        ["第 9 行", "引入基础类型"]
+      ],
+      "analogy": "像电器的总开关：默认关着，要用才拨上去。"
+    },
+    {
+      "title": "二、追踪开启时的额外 include + CSV 分类",
+      "start": 11,
+      "end": 20,
+      "new": [
+        "`#if TRACK_DISK_UTILIZATION` —— 只有开启追踪才编译这段",
+        "`HAL/PlatformMisc.h` —— `FPlatformTime`",
+        "`HAL/ThreadSafeBool.h` —— `FThreadSafeBool`",
+        "`ProfilingDebugging/CsvProfiler.h` —— `CSV_DECLARE_CATEGORY_EXTERN`",
+        "`CSV_DECLARE_CATEGORY_EXTERN(DiskIO)` —— 声明 CSV 分类",
+        "`SPEW_DISK_UTILIZATION` —— 是否打印磁盘利用率，默认 0"
+      ],
+      "rows": [
+        ["第 11 行", "追踪开关判断"],
+        ["第 12~14 行", "3 个额外 include"],
+        ["第 16 行", "CSV 分类声明"],
+        ["第 18~20 行", "SPEW_DISK_UTILIZATION 默认 0"]
+      ],
+      "analogy": "像给记录仪插上电源和存储卡：只有开机才需要。"
+    },
+    {
+      "title": "三、`UtilizationStats` 构造函数",
+      "start": 22,
+      "end": 33,
+      "new": [
+        "`struct FDiskUtilizationTracker` —— 追踪器本体",
+        "`struct UtilizationStats` —— 一组统计数据",
+        "初始化列表 `: TotalReads(0), ...` —— 构造时清零"
+      ],
+      "rows": [
+        ["第 22~24 行", "两个 struct 声明"],
+        ["第 26~33 行", "构造函数 + 6 个字段清零"]
+      ],
+      "analogy": "像新买的秒表：先归零再开始计时。"
+    },
+    {
+      "title": "四、4 个吞吐率计算函数",
+      "start": 35,
+      "end": 53,
+      "new": [
+        "`GetOverallThroughputBS()` —— 整体吞吐率（字节/秒）",
+        "`GetOverallThroughputMBS()` —— 整体吞吐率（MB/秒）",
+        "`GetReadThrougputBS()` —— 读取吞吐率（字节/秒），注意引擎拼写是 `Througput` 少个 h",
+        "`GetReadThrougputMBS()` —— 读取吞吐率（MB/秒）",
+        "`1024.0 * 1024.0` —— 字节转 MB 的除数",
+        "三元运算符 `cond ? A : B` —— 防除零"
+      ],
+      "rows": [
+        ["第 35~38 行", "整体吞吐率 BS"],
+        ["第 40~43 行", "整体吞吐率 MBS"],
+        ["第 45~48 行", "读取吞吐率 BS"],
+        ["第 50~53 行", "读取吞吐率 MBS"]
+      ],
+      "analogy": "像车速表：一个显示「公里/小时」，一个显示「米/秒」，同一份数据两种单位。"
+    },
+    {
+      "title": "五、3 个时间/占比计算函数",
+      "start": 55,
+      "end": 70,
+      "new": [
+        "`GetTotalIdleTimeInSeconds()` —— 总空闲时间（秒）",
+        "`GetTotalIOTimeInSeconds()` —— 总 IO 时间（秒）",
+        "`GetPercentTimeIdle()` —— 空闲时间占比（百分比）"
+      ],
+      "rows": [
+        ["第 55~58 行", "总空闲时间"],
+        ["第 60~63 行", "总 IO 时间"],
+        ["第 65~70 行", "空闲占比"]
+      ],
+      "analogy": "像统计「一天里有多少小时在干活、多少小时在等」。"
+    },
+    {
+      "title": "六、`Reset()` + `Dump()` + 6 个字段",
+      "start": 72,
+      "end": 92,
+      "new": [
+        "`Reset()` —— 所有计数器清零",
+        "`void Dump() const;` —— 只声明，实现在 `.cpp` 里",
+        "`uint64 TotalReads` / `TotalSeeks` —— 读取/寻道次数",
+        "`uint64 TotalBytesRead` / `TotalSeekDistance` —— 读取字节/寻道距离",
+        "`double TotalIOTime` / `TotalIdleTime` —— IO 时间/空闲时间"
+      ],
+      "rows": [
+        ["第 72~80 行", "`Reset()` 清零 6 个字段"],
+        ["第 82 行", "`Dump()` 声明"],
+        ["第 84~91 行", "6 个数据字段"]
+      ],
+      "analogy": "像账本：一页记流水（字段），一页写汇总（Dump），还有一块橡皮（Reset）。"
+    },
+    {
+      "title": "七、`FDiskUtilizationTracker` 成员变量",
+      "start": 94,
+      "end": 105,
+      "new": [
+        "`UtilizationStats LongTermStats` —— 长期统计（整个运行期）",
+        "`UtilizationStats ShortTermStats` —— 短期统计（最近一段时间）",
+        "`FCriticalSection CriticalSection` —— 保护统计数据的临界区",
+        "`uint64 IdleStartCycle` / `ReadStartCycle` —— 空闲/读取开始的 CPU 周期",
+        "`uint64 InFlightBytes` / `int32 InFlightReads` —— 飞行中的字节/请求数",
+        "`FThreadSafeBool bResetShortTermStats` —— 线程安全的重置标志"
+      ],
+      "rows": [
+        ["第 94~95 行", "长期/短期统计"],
+        ["第 97 行", "临界区"],
+        ["第 99~100 行", "两个周期起点"],
+        ["第 102~103 行", "飞行中计数"],
+        ["第 105 行", "重置标志"]
+      ],
+      "analogy": "像仪表盘上的指针和按钮：长期/短期两块表，一个锁（防止同时读），几个计数器。"
+    },
+    {
+      "title": "八、构造函数 + 6 个公开方法",
+      "start": 107,
+      "end": 136,
+      "new": [
+        "`StartRead(InReadBytes, InSeekDistance = 0)` —— 开始一次读取",
+        "`FinishRead()` —— 结束一次读取",
+        "`GetOutstandingRequests()` —— 取未完成请求数",
+        "`GetLongTermStats()` / `GetShortTermStats()` —— 取统计（只读引用）",
+        "`ResetShortTermStats()` —— 请求重置短期统计（置标志，下一帧生效）"
+      ],
+      "rows": [
+        ["第 107~113 行", "构造函数清零 4 个成员"],
+        ["第 115~116 行", "`StartRead` / `FinishRead` 声明"],
+        ["第 118~121 行", "`GetOutstandingRequests`"],
+        ["第 123~131 行", "两个 Get 统计"],
+        ["第 133~136 行", "`ResetShortTermStats`"]
+      ],
+      "analogy": "像停车场的进出闸机：进（StartRead）、出（FinishRead）、查还有几辆车（GetOutstandingRequests）。"
+    },
+    {
+      "title": "九、私有区",
+      "start": 138,
+      "end": 143,
+      "new": [
+        "`static float GetThrottleRateMBS()` —— 取限流速率（MB/秒）",
+        "`static constexpr float PrintFrequencySeconds = 0.5f` —— 打印频率（编译期常量）",
+        "`void MaybePrint()` —— 按需打印"
+      ],
+      "rows": [
+        ["第 138 行", "私有区开始"],
+        ["第 139 行", "限流速率"],
+        ["第 140 行", "打印频率常量"],
+        ["第 142 行", "按需打印"]
+      ],
+      "analogy": "像仪表盘背面的调节螺丝：用户看不到，但影响显示。"
+    },
+    {
+      "title": "十、全局实例 + 作用域追踪器（真实版）",
+      "start": 145,
+      "end": 158,
+      "new": [
+        "`extern FDiskUtilizationTracker GDiskUtilizationTracker` —— 全局唯一实例",
+        "`FScopedDiskUtilizationTracker` —— RAII 作用域追踪器",
+        "构造函数调 `StartRead()`，析构函数调 `FinishRead()`"
+      ],
+      "rows": [
+        ["第 145 行", "全局实例声明"],
+        ["第 147~152 行", "构造函数：开始读取"],
+        ["第 154~157 行", "析构函数：结束读取"]
+      ],
+      "analogy": "像自动门：人进来自动开（构造），人走出去自动关（析构）。"
+    },
+    {
+      "title": "十一、`#else` 分支：空壳版",
+      "start": 160,
+      "end": 169,
+      "new": [
+        "`#else` —— 没开启追踪时走这里",
+        "空壳 `FScopedDiskUtilizationTracker` —— 构造函数什么都不做",
+        "参数被忽略 —— 编译器可能给「未使用参数」警告，但零开销"
+      ],
+      "rows": [
+        ["第 160 行", "else 分支开始"],
+        ["第 162~167 行", "空壳结构体"],
+        ["第 169 行", "条件编译结束"]
+      ],
+      "analogy": "像没装记录仪的车：位置留着，但什么都不记。"
+    }
+  ],
+  "syntax": [
+    ["`#ifndef X` / `#define X 0` / `#endif`", "外部没定义就给默认值", "`#ifndef TRACK_DISK_UTILIZATION`"],
+    ["`#if X` / `#else` / `#endif`", "条件编译", "`#if TRACK_DISK_UTILIZATION`"],
+    ["`struct X { }`", "结构体（默认 public）", "`struct FDiskUtilizationTracker`"],
+    ["`X() : a(0), b(0) {}`", "初始化列表", "`UtilizationStats() : TotalReads(0), ...`"],
+    ["`cond ? A : B`", "三元运算符", "`TotalIOTime > 0.0 ? ... : 0.0`"],
+    ["`static constexpr float X = 0.5f`", "编译期常量", "`static constexpr float PrintFrequencySeconds = 0.5f`"],
+    ["`extern T X;`", "声明外部定义的全局量", "`extern FDiskUtilizationTracker GDiskUtilizationTracker;`"],
+    ["`~X()`", "析构函数", "`~FScopedDiskUtilizationTracker()`"]
+  ],
+  "diff": [
+    ["代码行", "169 行", "259 行", "多出的是每行上方的中文注释"],
+    ["非注释代码行", "129 行", "129 行", "**逐字一致**"],
+    ["注释语言", "英文", "中文", "全部译成中文"],
+    ["`#endif // 宏名`", "保留宏名", "保留宏名 + 中文说明", "宏名是标识符，不翻译"],
+    ["引擎拼写 `Througput`", "少一个 h", "照抄不改", "引擎原文如此"]
+  ],
+  "todo": [
+    "还原文件已生成：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\DiskUtilizationTracker.h`（259 行）",
+    "脚本验收：`codeOurs=129 / codeEngine=129 / diff=0`",
+    "确认后下一个：`HAL\\Event.h`（4534 字节）"
+  ],
+  "src": [
+    "引擎：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\DiskUtilizationTracker.h`（169 行）",
+    "还原：`E:\\ue5\\game_design\\code\\ue5Learing\\ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\DiskUtilizationTracker.h`（259 行）",
+    "总 md：`AI_Learning_Notes\\从零复刻ue5\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\04_DiskUtilizationTracker.h_总md.md`"
+  ]
+}

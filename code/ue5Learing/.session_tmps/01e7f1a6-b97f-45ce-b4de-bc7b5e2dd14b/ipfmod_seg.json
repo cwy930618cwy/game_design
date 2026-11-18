@@ -1,0 +1,95 @@
+﻿{
+  "title": "# 29 — `HAL/IPlatformFileModule.h` 逐行注释版（超详细）",
+  "header": [
+    "> 依据：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileModule.h`（**23 行**）",
+    "> 你新建文件：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileModule.h`",
+    "> **⚠️ 本节不能独立编译**——依赖 `IModuleInterface`。",
+    "> **注意**：这份是**讲解版**（每行代码上方都有中文注释），还原文件已按它生成。"
+  ],
+  "why": [
+    "UE 的模块系统允许**运行时加载 DLL**。有些平台文件实现（比如 `AndroidFile` / `IoStoreFile`）是独立模块，需要能被动态加载。`IPlatformFileModule.h` 就是这些模块的**统一接口**：模块加载后，引擎通过 `GetPlatformFile()` 拿到它提供的 `IPlatformFile` 实例。",
+    "",
+    "**它只有一个类、一个方法**：",
+    "",
+    "```cpp",
+    "class IPlatformFileModule : public IModuleInterface",
+    "{",
+    "public:",
+    "    virtual IPlatformFile* GetPlatformFile() = 0;",
+    "};",
+    "```",
+    "",
+    "**说个场景**：",
+    "",
+    "```cpp",
+    "// 引擎加载 AndroidFile 模块",
+    "IPlatformFileModule* Module = FModuleManager::LoadModulePtr<IPlatformFileModule>(\"AndroidFile\");",
+    "if (Module)",
+    "{",
+    "    IPlatformFile* File = Module->GetPlatformFile();   // 拿到平台文件实例",
+    "    // 挂到文件系统链上",
+    "}",
+    "```",
+    "",
+    "**为什么继承 `IModuleInterface`**：`IModuleInterface` 是所有 UE 模块的基类，提供 `StartupModule()` / `ShutdownModule()` 生命周期钩子。继承它之后，这个模块就能被 `FModuleManager` 正常加载/卸载。",
+    "",
+    "> 🔑 **一句话**：`IPlatformFileModule.h` = **平台文件模块的「取货窗口」**，模块加载后从这里拿 `IPlatformFile` 实例。"
+  ],
+  "segments": [
+    {
+      "title": "一、版权头 + 3 个 include",
+      "start": 1,
+      "end": 7,
+      "new": [
+        "`CoreTypes.h` —— `TCHAR` 等基础类型",
+        "`CoreFwd.h` —— `IPlatformFile` 等前置声明",
+        "`Modules/ModuleInterface.h` —— **基类 `IModuleInterface`**"
+      ],
+      "rows": [
+        ["第 1 行", "版权头"],
+        ["第 3 行", "头文件保护"],
+        ["第 5~7 行", "3 个 include"]
+      ],
+      "analogy": "像出门带三样东西：类型、前置声明、模块基类。"
+    },
+    {
+      "title": "二、类声明 + `GetPlatformFile`",
+      "start": 9,
+      "end": 23,
+      "new": [
+        "`class IPlatformFileModule : public IModuleInterface` —— 平台文件模块接口",
+        "`IModuleInterface` —— 所有 UE 模块的基类（提供 `StartupModule` / `ShutdownModule`）",
+        "`virtual IPlatformFile* GetPlatformFile() = 0` —— 纯虚，取平台文件实例",
+        "`= 0` —— 纯虚，派生类必须实现"
+      ],
+      "rows": [
+        ["第 9~11 行", "类说明注释"],
+        ["第 12~14 行", "类声明 + 继承"],
+        ["第 15 行", "公有区"],
+        ["第 17~21 行", "函数说明注释"],
+        ["第 22 行", "纯虚函数声明"],
+        ["第 23 行", "类结束"]
+      ],
+      "analogy": "像取货窗口：模块加载后，从这里递出它提供的平台文件实例。"
+    }
+  ],
+  "syntax": [
+    ["`class X : public Y`", "继承", "`class IPlatformFileModule : public IModuleInterface`"],
+    ["`virtual T* F() = 0;`", "纯虚函数", "`virtual IPlatformFile* GetPlatformFile() = 0;`"]
+  ],
+  "diff": [
+    ["代码行", "23 行", "36 行", "多出的是每行上方的中文注释"],
+    ["非注释代码行", "10 行", "10 行", "**逐字一致**"],
+    ["注释语言", "英文", "中文", "全部译成中文"]
+  ],
+  "todo": [
+    "还原文件已生成：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileModule.h`（36 行）",
+    "脚本验收：`codeOurs=10 / codeEngine=10 / diff=0`",
+    "确认后下一个：`HAL\\IPlatformFileOpenLogWrapper.h`（9465 字节）"
+  ],
+  "src": [
+    "引擎：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileModule.h`（23 行）",
+    "还原：`E:\\ue5\\game_design\\code\\ue5Learing\\ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileModule.h`（36 行）",
+    "总 md：`AI_Learning_Notes\\从零复刻ue5\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\16_IPlatformFileModule.h_总md.md`"
+  ]
+}

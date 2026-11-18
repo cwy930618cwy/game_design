@@ -1,0 +1,380 @@
+﻿{
+  "title": "# 22 — `HAL/FileManagerGeneric.h` 逐行注释版（超详细）",
+  "header": [
+    "> 依据：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FileManagerGeneric.h`（**374 行**）",
+    "> 你新建文件：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FileManagerGeneric.h`",
+    "> **⚠️ 本节不能独立编译**——依赖 `IFileManager` / `IPlatformFile` / `FArchive`。",
+    "> **注意**：这份是**讲解版**（每行代码上方都有中文注释），还原文件已按它生成。"
+  ],
+  "why": [
+    "上一节 `FileManager.h` 定义了 `IFileManager` 接口（40+ 个纯虚函数）。如果每个平台都从零实现这 40+ 个函数，工作量巨大且容易出错。",
+    "",
+    "`FileManagerGeneric.h` 就是**通用基类**：它把「能用其他函数推导出来的」都实现了（比如 `FileExists` 可以用 `GetStatData` 推导），平台只需要重写真正需要特化的部分。",
+    "",
+    "**它包含 3 个类**：",
+    "",
+    "| 类 | 作用 |",
+    "|---|---|",
+    "| `FFileManagerGeneric` | 文件管理器通用基类（实现 `IFileManager` 的大部分方法） |",
+    "| `FArchiveFileReaderGeneric` | 通用文件**读**归档（带缓冲） |",
+    "| `FArchiveFileWriterGeneric` | 通用文件**写**归档（带缓冲） |",
+    "",
+    "**说个场景**：你调 `IFileManager::Get().CreateFileReader(\"D:/Data.bin\")`，实际返回的就是 `FArchiveFileReaderGeneric`。它内部维护一个 1024 字节的缓冲区，`Serialize()` 时先看数据在不在缓冲里，不在才真正读磁盘 —— 这就是「带缓冲的读」。",
+    "",
+    "**三个缓冲大小宏**（第 16~26 行）：",
+    "",
+    "| 宏 | 默认值 | 用途 |",
+    "|---|---|---|",
+    "| `PLATFORM_FILE_READER_BUFFER_SIZE` | 1024 | 读缓冲 |",
+    "| `PLATFORM_FILE_WRITER_BUFFER_SIZE` | 4096 | 写缓冲 |",
+    "| `PLATFORM_DEBUG_FILE_WRITER_BUFFER_SIZE` | 4096 | 调试文件写缓冲 |",
+    "",
+    "> 🔑 **一句话**：`FileManagerGeneric.h` = **文件管理器的「通用底座」**，把能推导的都实现了，平台只补特化部分。"
+  ],
+  "segments": [
+    {
+      "title": "一、版权头 + 10 个 include",
+      "start": 1,
+      "end": 14,
+      "new": [
+        "`Containers/Array.h` —— `TArray` / `TArray64`",
+        "`Containers/ContainersFwd.h` —— 容器前置声明",
+        "`Containers/UnrealString.h` —— `FString`",
+        "`CoreTypes.h` —— `uint8` / `uint32` / `int64` / `TCHAR`",
+        "`GenericPlatform/GenericPlatformFile.h` —— `IPlatformFile` / `IFileHandle` / `FFileStatData`",
+        "`HAL/FileManager.h` —— **基类 `IFileManager`**",
+        "`HAL/PlatformFileManager.h` —— `FPlatformFileManager`",
+        "`Misc/DateTime.h` —— `FDateTime`",
+        "`Serialization/Archive.h` —— **基类 `FArchive`**",
+        "`Templates/UniquePtr.h` —— `TUniquePtr<IFileHandle>`"
+      ],
+      "rows": [
+        ["第 1 行", "版权头"],
+        ["第 3 行", "头文件保护"],
+        ["第 5~14 行", "10 个 include"]
+      ],
+      "analogy": "像开工前领十样工具：容器、字符串、类型、平台文件、基类、单例、时间、归档、智能指针。"
+    },
+    {
+      "title": "二、3 个缓冲大小宏",
+      "start": 16,
+      "end": 26,
+      "new": [
+        "`#ifndef X` / `#define X 值` / `#endif` —— 「平台没定义就给默认值」",
+        "`PLATFORM_FILE_READER_BUFFER_SIZE` —— 读缓冲，默认 1024",
+        "`PLATFORM_FILE_WRITER_BUFFER_SIZE` —— 写缓冲，默认 4096",
+        "`PLATFORM_DEBUG_FILE_WRITER_BUFFER_SIZE` —— 调试写缓冲，默认 4096"
+      ],
+      "rows": [
+        ["第 16~18 行", "读缓冲宏"],
+        ["第 20~22 行", "写缓冲宏"],
+        ["第 24~26 行", "调试写缓冲宏"]
+      ],
+      "analogy": "像给水桶定容量：读用小桶（1KB），写用大桶（4KB），平台可以自己换。"
+    },
+    {
+      "title": "三、`FFileManagerGeneric` 类声明 + `GetLowLevel`",
+      "start": 28,
+      "end": 44,
+      "new": [
+        "`class FFileManagerGeneric : public IFileManager` —— 继承接口",
+        "`FORCEINLINE IPlatformFile& GetLowLevel() const` —— 取底层平台文件接口",
+        "`FPlatformFileManager::Get().GetPlatformFile()` —— 从单例取",
+        "**不缓存 LowLevel** —— 每次取单例，保证永远最新"
+      ],
+      "rows": [
+        ["第 28~34 行", "类说明注释"],
+        ["第 35~36 行", "类声明 + 继承"],
+        ["第 38~42 行", "`GetLowLevel` 内联实现"],
+        ["第 44 行", "公有区"]
+      ],
+      "analogy": "像不存电话号码，每次现查：虽然多一步，但永远不会打错。"
+    },
+    {
+      "title": "四、构造 / 析构",
+      "start": 46,
+      "end": 54,
+      "new": [
+        "`FFileManagerGeneric() { }` —— 默认构造（空）",
+        "`virtual ~FFileManagerGeneric() { }` —— 虚析构（空）"
+      ],
+      "rows": [
+        ["第 46~49 行", "默认构造"],
+        ["第 51~54 行", "虚析构"]
+      ],
+      "analogy": "像开关机：开机什么都不用做，关机也不用清理。"
+    },
+    {
+      "title": "五、命令行 + 沙箱（3 个）",
+      "start": 56,
+      "end": 70,
+      "new": [
+        "`ProcessCommandLineOptions()` —— 解析命令行（实现在 .cpp）",
+        "`SetSandboxEnabled(bool)` —— 内联转调 `GetLowLevel().SetSandboxEnabled()`",
+        "`IsSandboxEnabled()` —— 内联转调 `GetLowLevel().IsSandboxEnabled()`"
+      ],
+      "rows": [
+        ["第 56~60 行", "`ProcessCommandLineOptions`"],
+        ["第 62~65 行", "`SetSandboxEnabled`"],
+        ["第 67~70 行", "`IsSandboxEnabled`"]
+      ],
+      "analogy": "像前台转接电话：沙箱相关的直接转给底层平台。"
+    },
+    {
+      "title": "六、打开文件三件套（内联转调）",
+      "start": 72,
+      "end": 87,
+      "new": [
+        "`CreateFileReader(Filename, ReadFlags)` —— 转调 `CreateFileReaderInternal(..., PLATFORM_FILE_READER_BUFFER_SIZE)`",
+        "`CreateFileWriter(Filename, WriteFlags)` —— 转调 `CreateFileWriterInternal(..., PLATFORM_FILE_WRITER_BUFFER_SIZE)`",
+        "`CreateDebugFileWriter(...)` —— 转调 `CreateFileWriterInternal(..., PLATFORM_DEBUG_FILE_WRITER_BUFFER_SIZE)`",
+        "**三个都只是「补上缓冲大小参数」再转调**"
+      ],
+      "rows": [
+        ["第 72~75 行", "`CreateFileReader`"],
+        ["第 77~80 行", "`CreateFileWriter`"],
+        ["第 82~87 行", "`CreateDebugFileWriter`（条件编译）"]
+      ],
+      "analogy": "像点餐时自动加默认配菜：你只说主食，它帮你补上缓冲大小。"
+    },
+    {
+      "title": "七、13 个 CORE_API 声明（实现在 .cpp）",
+      "start": 89,
+      "end": 107,
+      "new": [
+        "`CORE_API` —— 跨模块导出（实现在 .cpp 里）",
+        "`Delete` / `IsReadOnly` / `Move` / `FileExists` / `DirectoryExists` —— 5 个基础操作",
+        "`FindFiles` / `FindFilesRecursive` —— 2 个查找",
+        "`GetFileAgeSeconds` / `GetTimeStamp` / `GetAccessTimeStamp` / `GetTimeStampPair` / `SetTimeStamp` —— 5 个时间",
+        "`GetFilenameOnDisk` —— 磁盘大小写路径",
+        "`Copy` / `MakeDirectory` / `DeleteDirectory` —— 3 个增删",
+        "`GetStatData` —— 元数据",
+        "**注意**：`GetTimeStampPair`（第 99 行）**没有 `override`** —— 引擎原文如此"
+      ],
+      "rows": [
+        ["第 89~93 行", "5 个基础操作"],
+        ["第 94~95 行", "2 个查找"],
+        ["第 96~100 行", "5 个时间"],
+        ["第 101 行", "`GetFilenameOnDisk`"],
+        ["第 103~105 行", "3 个增删"],
+        ["第 107 行", "`GetStatData`"]
+      ],
+      "analogy": "像服务台的 13 个窗口：都开着，但具体办事的人在后屋（.cpp）。"
+    },
+    {
+      "title": "八、`FindFiles` 扩展名版",
+      "start": 109,
+      "end": 119,
+      "new": [
+        "`FindFiles(FoundFiles, Directory, FileExtension)` —— 按扩展名过滤",
+        "`FileExtension = nullptr` —— 默认不过滤（返回全部）"
+      ],
+      "rows": [
+        ["第 109~118 行", "函数说明注释"],
+        ["第 119 行", "函数声明"]
+      ],
+      "analogy": "像筛子：不装筛网就全过，装了只留指定大小。"
+    },
+    {
+      "title": "九、8 个 `IterateDirectory`",
+      "start": 121,
+      "end": 155,
+      "new": [
+        "`IterateDirectory` ×2 —— 单层（虚接口 / 函数对象）",
+        "`IterateDirectoryRecursively` ×2 —— 递归（虚接口 / 函数对象）",
+        "`IterateDirectoryStat` ×2 —— 单层 + stat（虚接口 / 函数对象）",
+        "`IterateDirectoryStatRecursively` ×2 —— 递归 + stat（虚接口 / 函数对象）",
+        "`IPlatformFile::FDirectoryVisitor&` —— 虚接口访问者",
+        "`IPlatformFile::FDirectoryVisitorFunc` —— 函数对象访问者（按值传）"
+      ],
+      "rows": [
+        ["第 121~128 行", "单层 ×2"],
+        ["第 130~137 行", "递归 ×2"],
+        ["第 139~146 行", "单层 stat ×2"],
+        ["第 148~155 行", "递归 stat ×2"]
+      ],
+      "analogy": "像查户口 8 种查法：单层/递归 × 虚接口/函数对象 × 带不带 stat。"
+    },
+    {
+      "title": "十、路径转换 + `FileSize`",
+      "start": 157,
+      "end": 195,
+      "new": [
+        "`static DefaultConvertToRelativePath(Filename)` —— 静态默认实现（可复用）",
+        "`ConvertToRelativePath(Filename)` —— 转相对路径",
+        "`ConvertToAbsolutePathForExternalAppForRead(Filename)` —— 转绝对路径（外部读）",
+        "`ConvertToAbsolutePathForExternalAppForWrite(Filename)` —— 转绝对路径（外部写）",
+        "`FileSize(Filename)` —— 文件大小（字节），不存在返回 `INDEX_NONE`"
+      ],
+      "rows": [
+        ["第 157~163 行", "`DefaultConvertToRelativePath`（静态）"],
+        ["第 165~171 行", "`ConvertToRelativePath`"],
+        ["第 173~179 行", "`ConvertToAbsolutePathForExternalAppForRead`"],
+        ["第 181~187 行", "`ConvertToAbsolutePathForExternalAppForWrite`"],
+        ["第 189~195 行", "`FileSize`"]
+      ],
+      "analogy": "像给外人指路：自己人用相对地址，外人必须给完整地址，而且读写地址可能不同。"
+    },
+    {
+      "title": "十一、`SendMessageToServer`（内联转调）",
+      "start": 197,
+      "end": 207,
+      "new": [
+        "`SendMessageToServer(Message, Handler)` —— 给文件服务器发消息",
+        "内联转调 `GetLowLevel().SendMessageToServer(...)`"
+      ],
+      "rows": [
+        ["第 197~203 行", "函数说明注释"],
+        ["第 204~207 行", "内联实现"]
+      ],
+      "analogy": "像转接电话：直接转给底层平台。"
+    },
+    {
+      "title": "十二、私有区：4 个内部辅助函数",
+      "start": 209,
+      "end": 219,
+      "new": [
+        "`CreateFileReaderInternal(Filename, ReadFlags, BufferSize)` —— 读归档内部实现",
+        "`CreateFileWriterInternal(Filename, WriteFlags, BufferSize)` —— 写归档内部实现",
+        "`CopyWithProgress(...)` —— 带进度回调的复制",
+        "`FindFilesRecursiveInternal(...)` —— 递归查找内部实现"
+      ],
+      "rows": [
+        ["第 209 行", "私有区开始"],
+        ["第 210~211 行", "2 个 Create 内部实现"],
+        ["第 213~216 行", "`CopyWithProgress`"],
+        ["第 218 行", "`FindFilesRecursiveInternal`"],
+        ["第 219 行", "类结束"]
+      ],
+      "analogy": "像后厨的四个灶台：客人看不到，但菜都从这里出。"
+    },
+    {
+      "title": "十三、`FArchiveFileReaderGeneric` 公有接口",
+      "start": 222,
+      "end": 249,
+      "new": [
+        "`class FArchiveFileReaderGeneric : public FArchive` —— 继承归档基类",
+        "`FArchiveFileReaderGeneric(IFileHandle*, Filename, Size, BufferSize, Flags)` —— 构造",
+        "`Seek` / `Tell` / `TotalSize` / `Close` / `Serialize` / `FlushCache` —— 6 个 `override final`",
+        "`final` —— 派生类不能再重写",
+        "`GetArchiveName()` —— 内联返回 `Filename`",
+        "`Precache(Offset, Size)` —— 预读（没有 `final`，派生类可重写）"
+      ],
+      "rows": [
+        ["第 222~226 行", "分节横幅 + 类声明"],
+        ["第 229~230 行", "构造 / 析构"],
+        ["第 232~242 行", "6 个 `override final`"],
+        ["第 243~246 行", "`GetArchiveName` 内联"],
+        ["第 247~249 行", "`FlushCache` / `Precache`"]
+      ],
+      "analogy": "像读书的三个动作：翻到某页（Seek）、看现在第几页（Tell）、读内容（Serialize）。"
+    },
+    {
+      "title": "十四、`FArchiveFileReaderGeneric` protected + 成员",
+      "start": 251,
+      "end": 296,
+      "new": [
+        "`InternalPrecache(Offset, Size)` —— 预读内部实现",
+        "`SeekLowLevel(InPos)` —— 平台专属跳转（虚，派生类可重写）",
+        "`CloseLowLevel()` —— 关闭底层句柄",
+        "`ReadLowLevel(Dest, CountToRead, OutBytesRead)` —— 平台专属读取",
+        "`IsSilent()` —— 检查 `Flags & FILEREAD_Silent`",
+        "`FString Filename` / `int64 Size` / `int64 Pos` / `int64 BufferBase` —— 4 个基础成员",
+        "`TUniquePtr<IFileHandle> Handle` —— 独占指针（自动关闭）",
+        "`TArray64<uint8> BufferArray` —— 缓冲区（64 位长度）",
+        "`int64 BufferSize` / `uint32 Flags` / `bool bFirstReadAfterSeek` —— 3 个状态成员",
+        "`enum { bPrecacheAsSoonAsPossible = 0 }` —— 匿名枚举常量",
+        "`friend class FArchiveFileReaderGenericTest` —— 友元测试类"
+      ],
+      "rows": [
+        ["第 251~252 行", "protected + `InternalPrecache`"],
+        ["第 253~258 行", "`SeekLowLevel`"],
+        ["第 259~260 行", "`CloseLowLevel`"],
+        ["第 261~267 行", "`ReadLowLevel`"],
+        ["第 269~273 行", "`IsSilent`"],
+        ["第 275~280 行", "5 个成员"],
+        ["第 281~288 行", "缓冲相关 4 个成员"],
+        ["第 290~295 行", "匿名枚举 + 友元"],
+        ["第 296 行", "类结束"]
+      ],
+      "analogy": "像读书人的书签和笔记：读到哪（Pos）、缓冲到哪（BufferBase）、书本身（Handle）。"
+    },
+    {
+      "title": "十五、`FArchiveFileWriterGeneric` 公有接口",
+      "start": 299,
+      "end": 321,
+      "new": [
+        "`class FArchiveFileWriterGeneric : public FArchive` —— 继承归档基类",
+        "`FArchiveFileWriterGeneric(IFileHandle*, Filename, InPos, BufferSize, Flags)` —— 构造",
+        "`Seek` / `Tell` / `Close` / `Serialize` / `Flush` —— 5 个 `override final`",
+        "`TotalSize()` —— 没有 `final`（派生类可重写）",
+        "`GetArchiveName()` —— 内联返回 `Filename`"
+      ],
+      "rows": [
+        ["第 299~303 行", "分节横幅 + 类声明"],
+        ["第 306~307 行", "构造 / 析构"],
+        ["第 309~317 行", "5 个 `override final` + `TotalSize`"],
+        ["第 318~321 行", "`GetArchiveName` 内联"]
+      ],
+      "analogy": "像写书的三个动作：翻到某页（Seek）、写内容（Serialize）、保存（Flush）。"
+    },
+    {
+      "title": "十六、`FArchiveFileWriterGeneric` protected + 成员",
+      "start": 323,
+      "end": 374,
+      "new": [
+        "`FlushBuffer()` —— 把内部缓冲写到句柄（**不刷新句柄本身**）",
+        "`SeekLowLevel(InPos)` —— 平台专属跳转",
+        "`CloseLowLevel()` —— 关闭底层句柄",
+        "`WriteLowLevel(Src, CountToWrite)` —— 平台专属写入",
+        "`LogWriteError(Message)` —— **已废弃（5.6）**",
+        "`LogWriteError(Message, LastError)` —— 新版（带系统错误码）",
+        "`IsSilent()` —— 检查 `Flags & FILEWRITE_Silent`",
+        "`FString Filename` / `uint32 Flags` / `int64 Pos` —— 3 个基础成员",
+        "`TUniquePtr<IFileHandle> Handle` —— 独占指针",
+        "`TArray64<uint8> BufferArray` / `int64 BufferSize` —— 缓冲",
+        "`bool bLoggingError` —— 防止递归记录错误"
+      ],
+      "rows": [
+        ["第 323~329 行", "`FlushBuffer`"],
+        ["第 330~335 行", "`SeekLowLevel`"],
+        ["第 336~340 行", "`CloseLowLevel`"],
+        ["第 341~347 行", "`WriteLowLevel`"],
+        ["第 349~350 行", "废弃的 `LogWriteError`"],
+        ["第 351~358 行", "新版 `LogWriteError`"],
+        ["第 360~364 行", "`IsSilent`"],
+        ["第 366~373 行", "6 个成员"],
+        ["第 374 行", "类结束"]
+      ],
+      "analogy": "像写书人的草稿本：先写草稿（BufferArray），攒够了再抄到正式本（FlushBuffer）。"
+    }
+  ],
+  "syntax": [
+    ["`class X : public Y`", "继承", "`class FFileManagerGeneric : public IFileManager`"],
+    ["`FORCEINLINE T& F() const`", "强制内联", "`FORCEINLINE IPlatformFile& GetLowLevel() const`"],
+    ["`override final`", "重写且禁止再重写", "`virtual void Seek(int64 InPos) override final;`"],
+    ["`TUniquePtr<X>`", "独占智能指针（自动 delete）", "`TUniquePtr<IFileHandle> Handle;`"],
+    ["`TArray64<uint8>`", "64 位长度的字节数组", "`TArray64<uint8> BufferArray;`"],
+    ["`enum { X = 0 };`", "匿名枚举常量", "`enum { bPrecacheAsSoonAsPossible = 0 };`"],
+    ["`friend class X;`", "友元类", "`friend class FArchiveFileReaderGenericTest;`"],
+    ["`UE_DEPRECATED(v, \"msg\")`", "标记废弃", "`UE_DEPRECATED(5.6, \"...\")`"],
+    ["`!!(X & Y)`", "转成 bool", "`return !!(Flags & FILEREAD_Silent);`"]
+  ],
+  "diff": [
+    ["代码行", "374 行", "525 行", "多出的是每行上方的中文注释"],
+    ["非注释代码行", "179 行", "179 行", "**逐字一致**"],
+    ["注释语言", "英文", "中文", "全部译成中文"],
+    ["`GetTimeStampPair` 无 `override`", "引擎原文如此", "照抄不改", "引擎遗漏，不补"],
+    ["`UE_DEPRECATED` 字符串", "英文原文", "保留英文", "API 契约，不翻译"]
+  ],
+  "todo": [
+    "还原文件已生成：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FileManagerGeneric.h`（525 行）",
+    "脚本验收：`codeOurs=179 / codeEngine=179 / diff=0`",
+    "确认后下一个：`HAL\\FMemory.inl`（8498 字节）"
+  ],
+  "src": [
+    "引擎：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FileManagerGeneric.h`（374 行）",
+    "还原：`E:\\ue5\\game_design\\code\\ue5Learing\\ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FileManagerGeneric.h`（525 行）",
+    "总 md：`AI_Learning_Notes\\从零复刻ue5\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\09_FileManagerGeneric.h_总md.md`"
+  ]
+}

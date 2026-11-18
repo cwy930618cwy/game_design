@@ -1,0 +1,597 @@
+﻿{
+  "title": "# 28 — `HAL/IPlatformFileManagedStorageWrapper.h` 逐行注释版（超详细）",
+  "header": [
+    "> 依据：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileManagedStorageWrapper.h`（**1085 行**）",
+    "> 你新建文件：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileManagedStorageWrapper.h`",
+    "> **⚠️ 本节不能独立编译**——依赖 `IPlatformFile` / `GConfig` / `FPaths` / `FRWLock`。",
+    "> **注意**：这份是**讲解版**（每行代码上方都有中文注释），还原文件已按它生成。"
+  ],
+  "why": [
+    "手机 / 主机的**持久化存储有配额**（比如「存档最多 100MB」）。如果不管，玩家存档写爆了磁盘，游戏就崩了。`IPlatformFileManagedStorageWrapper.h` 就是**存储配额管理器**：它把文件按**分类（Category）**分组，每个分类有配额，写文件前先检查配额。",
+    "",
+    "**它包含 7 个核心类型**：",
+    "",
+    "| 类型 | 作用 |",
+    "|---|---|",
+    "| `FPersistentManagedFile` | 一个被托管的文件（路径 + 分类索引） |",
+    "| `FManagedStorageFileLockRegistry` | **按文件名分配锁**的注册表（引用计数） |",
+    "| `FManagedStorageScopeFileLock` | 作用域文件锁（RAII） |",
+    "| `FPersistentStorageCategory` | **一个分类**（名字 + 目录列表 + 配额 + 已用大小） |",
+    "| `FPersistentStorageManager` | **管理器单例**（所有分类 + 根目录） |",
+    "| `FManagedStorageFileWriteHandle` | 托管存储的写句柄（写前查配额） |",
+    "| `TManagedStoragePlatformFile<BaseClass>` | **模板化**的平台文件包装器 |",
+    "",
+    "**核心设计 ①：分类 + 配额**",
+    "",
+    "```",
+    "FPersistentStorageCategory",
+    "├─ CategoryName          \"SaveGame\"",
+    "├─ Directories[]         [\".../Saved/SaveGames/\"]",
+    "├─ StorageQuota          100MB",
+    "├─ OptionalStorageQuota  20MB（可选部分）",
+    "└─ UsedQuota             当前已用（std::atomic<int64>）",
+    "```",
+    "",
+    "**核心设计 ②：按文件名分配锁**（第 63~107 行）",
+    "",
+    "```cpp",
+    "TMap<FString, FLockData> FileLockMap;   // 文件名 → 锁数据",
+    "struct FLockData {",
+    "    TUniquePtr<FCriticalSection> CS;    // 每个文件一把锁",
+    "    int32 RefCount = 0;                 // 引用计数",
+    "};",
+    "```",
+    "",
+    "**为什么不用一把大锁**：不同文件的写操作可以并行，只有同一文件的写才需要互斥。引用计数保证「没人用了就回收锁」。",
+    "",
+    "**核心设计 ③：配额检查用 CAS 循环**（第 295~309 行）",
+    "",
+    "```cpp",
+    "do {",
+    "    NewUsedQuota = OldUsedQuota + (NewFileSize - OldFileSize);",
+    "    if (NewUsedQuota > StorageQuota) return RespectQuota;   // 超配额",
+    "} while (!UsedQuota.compare_exchange_weak(OldUsedQuota, NewUsedQuota));",
+    "```",
+    "",
+    "`compare_exchange_weak` 是**无锁原子操作**：多线程同时写不同文件时，不需要加锁就能安全更新 `UsedQuota`。",
+    "",
+    "**核心设计 ④：模板化包装器**（第 823~825 行）",
+    "",
+    "```cpp",
+    "// NOTE: This is templated rather than a polymorphic wrapper because a lot code",
+    "// expects the physical layer not to be a wrapper.",
+    "template<class BaseClass>",
+    "class TManagedStoragePlatformFile : public BaseClass",
+    "```",
+    "",
+    "**为什么用模板**：很多代码期望「物理层不是包装器」（比如 `&BaseClass::DeleteDirectoryRecursively == &IPlatformFile::DeleteDirectoryRecursively` 这种函数指针比较）。模板继承能保持类型身份，多态包装会破坏它。",
+    "",
+    "**说个场景**：",
+    "",
+    "```cpp",
+    "// 写存档前自动检查配额",
+    "IFileHandle* H = File.OpenWrite(\".../SaveGames/Slot1.sav\");",
+    "if (!H) { /* 配额满了，提示玩家清理 */ }",
+    "```",
+    "",
+    "**`IsReady()` 的三重检查**（第 348~355 行）：",
+    "",
+    "```cpp",
+    "return GConfig && GConfig->IsReadyForUse()      // 配置就绪",
+    "    && FCommandLine::IsInitialized()            // 命令行就绪",
+    "    && !GIsCriticalError;                       // 无致命错误",
+    "```",
+    "",
+    "未就绪时所有操作**直接透传**给下一层（不追踪），避免启动早期崩溃。",
+    "",
+    "> 🔑 **一句话**：`IPlatformFileManagedStorageWrapper.h` = **存储配额的「守门员」**，按分类管配额，写前查、超了拒。"
+  ],
+  "segments": [
+    {
+      "title": "一、版权头 + 30 个 include + 日志分类",
+      "start": 1,
+      "end": 39,
+      "new": [
+        "`Algo/Find.h` / `Algo/IndexOf.h` —— `Algo::FindByPredicate` / `Algo::FindBy`",
+        "`Async/Async.h` / `Async/TaskGraphInterfaces.h` —— `AsyncTask` / `ENamedThreads`",
+        "`Containers/Array.h` / `ArrayView.h` / `Map.h` / `SparseArray.h` —— 容器",
+        "`CoreGlobals.h` —— `GConfig` / `GIsCriticalError`",
+        "`GenericPlatform/GenericPlatformFile.h` —— `IPlatformFile` / `IFileHandle`",
+        "`HAL/CriticalSection.h` —— `FCriticalSection`",
+        "`Misc/CommandLine.h` —— `FCommandLine`",
+        "`Misc/ConfigCacheIni.h` —— `GConfig`",
+        "`Misc/EnumClassFlags.h` —— `ENUM_CLASS_FLAGS`",
+        "`Misc/Optional.h` —— `TOptional`",
+        "`Misc/Paths.h` —— `FPaths`",
+        "`Misc/ScopeLock.h` / `ScopeRWLock.h` —— `FScopeLock` / `FReadScopeLock` / `FWriteScopeLock`",
+        "`<atomic>` —— `std::atomic<int64>`",
+        "`DECLARE_LOG_CATEGORY_EXTERN(LogPlatformFileManagedStorage, Log, All)` —— 托管存储日志分类"
+      ],
+      "rows": [
+        ["第 1 行", "版权头"],
+        ["第 3 行", "头文件保护"],
+        ["第 5~35 行", "30 个 include"],
+        ["第 37 行", "`<atomic>`"],
+        ["第 39 行", "日志分类"]
+      ],
+      "analogy": "像开工前领 30 样工具：算法、异步、容器、全局量、平台文件、锁、命令行、配置、枚举标志、可选值、路径、作用域锁、原子。"
+    },
+    {
+      "title": "二、`ManagedStorageInternal` 命名空间",
+      "start": 41,
+      "end": 47,
+      "new": [
+        "`namespace ManagedStorageInternal` —— 内部辅助函数命名空间",
+        "`IsUnderDirectory(InPath, InDirectory)` —— 判断路径是否在目录之下",
+        "**和 `FPaths::IsUnderDirectory` 的区别**：假定路径已是完整路径 + 永远不区分大小写"
+      ],
+      "rows": [
+        ["第 41~42 行", "命名空间开始"],
+        ["第 43~45 行", "说明注释"],
+        ["第 46 行", "`IsUnderDirectory` 声明"],
+        ["第 47 行", "命名空间结束"]
+      ],
+      "analogy": "像门牌号比对：只看前缀，不管大小写。"
+    },
+    {
+      "title": "三、`FPersistentManagedFile`",
+      "start": 49,
+      "end": 61,
+      "new": [
+        "`struct FPersistentManagedFile` —— 一个被托管的文件",
+        "`FString FullFilename` —— 完整文件路径",
+        "`int32 Category = INDEX_NONE` —— 所属分类索引（`INDEX_NONE` 表示不属于任何分类）",
+        "`IsValid()` —— 分类索引 >= 0",
+        "`explicit operator bool()` —— 显式转 bool（同 `IsValid`）",
+        "`Clear()` —— 分类索引置 `INDEX_NONE`"
+      ],
+      "rows": [
+        ["第 49~52 行", "结构体声明 + 2 个成员"],
+        ["第 54~55 行", "`IsValid` / `operator bool`"],
+        ["第 57~60 行", "`Clear`"],
+        ["第 61 行", "结构体结束"]
+      ],
+      "analogy": "像一张借书卡：书名（路径）+ 分类号（Category），分类号 -1 表示「不归任何分类管」。"
+    },
+    {
+      "title": "四、`FManagedStorageFileLockRegistry`（按文件名分配锁）",
+      "start": 63,
+      "end": 107,
+      "new": [
+        "`class FManagedStorageFileLockRegistry` —— 按文件名分配锁的注册表",
+        "`friend class FManagedStorageScopeFileLock` —— 友元",
+        "`GetLock(InFilename)` —— 取锁（引用计数 +1）",
+        "`GetTypeHash(InFilename)` —— 算文件名哈希",
+        "`FScopeLock Lock(&FileLockMapCS)` —— 加锁保护 `FileLockMap`",
+        "`FileLockMap.FindOrAddByHash(KeyHash, InFilename)` —— 找到或新建锁数据",
+        "`++LockData.RefCount` —— 引用计数 +1",
+        "`ReleaseLock(InFilename)` —— 释放锁（引用计数 -1）",
+        "`FileLockMap.FindByHash(KeyHash, InFilename)` —— 找到锁数据",
+        "`if (LockData->RefCount == 0)` —— 归零就移除",
+        "`struct FLockData` —— 每个文件的锁数据（`TUniquePtr<FCriticalSection> CS` + `int32 RefCount`）",
+        "`TMap<FString, FLockData> FileLockMap` —— 文件名 → 锁数据",
+        "`FCriticalSection FileLockMapCS` —— 保护 `FileLockMap` 的锁"
+      ],
+      "rows": [
+        ["第 63~66 行", "类声明 + 友元"],
+        ["第 68~78 行", "`GetLock`"],
+        ["第 80~95 行", "`ReleaseLock`"],
+        ["第 97~103 行", "`FLockData` 结构"],
+        ["第 105~107 行", "2 个成员"]
+      ],
+      "analogy": "像钥匙柜：每个房间（文件）一把钥匙，借的时候登记（+1），还的时候注销（-1），没人借就收起来。"
+    },
+    {
+      "title": "五、`FManagedStorageScopeFileLock`（RAII 文件锁）",
+      "start": 109,
+      "end": 137,
+      "new": [
+        "`class FManagedStorageScopeFileLock` —— 作用域文件锁",
+        "`FManagedStorageScopeFileLock(FPersistentManagedFile)` —— 构造时加锁",
+        "`~FManagedStorageScopeFileLock()` —— 析构时解锁",
+        "4 个 `= delete` —— 禁拷贝 + 禁移动",
+        "`Unlock()` / `Lock()` —— 实现在 .cpp",
+        "`FPersistentManagedFile ManagedFile` —— 被锁的文件",
+        "`FCriticalSection* pFileCS = nullptr` —— 锁指针（空表示未加锁）"
+      ],
+      "rows": [
+        ["第 109~116 行", "类声明 + 构造"],
+        ["第 118~121 行", "析构"],
+        ["第 123~127 行", "4 个 delete"],
+        ["第 129~132 行", "`Unlock` / `Lock`"],
+        ["第 134~137 行", "2 个成员"]
+      ],
+      "analogy": "像进房间自动锁门、出门自动开锁：不用手动管。"
+    },
+    {
+      "title": "六、`EPersistentStorageManagerFileSizeFlags` 枚举",
+      "start": 139,
+      "end": 145,
+      "new": [
+        "`enum class EPersistentStorageManagerFileSizeFlags : uint8` —— 文件大小更新标志",
+        "`None = 0` —— 无标志",
+        "`OnlyUpdateIfLess = (1 << 0)` —— 只在更小时才更新",
+        "`RespectQuota = (1 << 1)` —— 遵守配额限制",
+        "`ENUM_CLASS_FLAGS(...)` —— 生成位运算"
+      ],
+      "rows": [
+        ["第 139~144 行", "枚举定义（3 个值）"],
+        ["第 145 行", "生成位运算"]
+      ],
+      "analogy": "像两个开关：只在更小时更新、要不要查配额。"
+    },
+    {
+      "title": "七、`FPersistentStorageCategory` 构造 + 6 个 getter",
+      "start": 147,
+      "end": 197,
+      "new": [
+        "`struct FPersistentStorageCategory` —— 一个持久化存储分类",
+        "构造函数：`(CategoryName, Directories, Quota, OptionalQuota)`",
+        "`check(OptionalStorageQuota < StorageQuota || StorageQuota <= 0)` —— 可选配额必须是总配额的一部分",
+        "`GetCategoryName()` / `GetCategoryQuota()` / `GetCategoryOptionalQuota()` —— 3 个 getter",
+        "`GetUsedSize()` —— 已用大小",
+        "`GetAvailableSize()` —— 可用大小（配额为负时用 `MAX_int64`）",
+        "`IsInCategory(Path)` —— 转调 `ShouldManageFile`",
+        "`IsCategoryFull()` —— 可用大小 <= 0"
+      ],
+      "rows": [
+        ["第 147~157 行", "结构体声明 + 构造"],
+        ["第 159~172 行", "3 个 getter"],
+        ["第 174~177 行", "`GetUsedSize`"],
+        ["第 179~187 行", "`GetAvailableSize`"],
+        ["第 189~192 行", "`IsInCategory`"],
+        ["第 194~197 行", "`IsCategoryFull`"]
+      ],
+      "analogy": "像一个仓库：有名字、有容量、有已用量，能查还剩多少、满没满。"
+    },
+    {
+      "title": "八、`AddOrUpdateFile` / `RemoveFile`",
+      "start": 199,
+      "end": 245,
+      "new": [
+        "`AddOrUpdateFile(Filename, FileSize, Flags)` —— 添加或更新文件大小",
+        "`FReadScopeLock ScopeLock(FileSizesLock)` —— 读锁查旧大小",
+        "`FileSizes.FindByHash(KeyHash, Filename)` —— 按哈希查",
+        "`TryUpdateQuota(OldFileSize, FileSize, Flags)` —— 尝试更新配额",
+        "`FWriteScopeLock ScopeLock(FileSizesLock)` —— 写锁更新表",
+        "`FileSizes.AddByHash(KeyHash, Filename, FileSize)` —— 写入新大小",
+        "`RemoveFile(Filename)` —— 从分类移除文件",
+        "`FileSizesLock.WriteLock()` —— **手动加写锁**（因为 `FWriteScopeLock` 不支持提前解锁）",
+        "`FileSizes.RemoveAndCopyValue(Filename, OldSize)` —— 移除并取出旧大小",
+        "`UsedQuota -= OldSize` —— 已用配额减去"
+      ],
+      "rows": [
+        ["第 199~223 行", "`AddOrUpdateFile`"],
+        ["第 225~243 行", "`RemoveFile`"],
+        ["第 245 行", "`GetDirectories`"]
+      ],
+      "analogy": "像仓库记账：进货时更新库存（AddOrUpdate），出货时扣减（Remove）。"
+    },
+    {
+      "title": "九、`CategoryStat` + `GetStat`",
+      "start": 247,
+      "end": 276,
+      "new": [
+        "`struct CategoryStat` —— 分类统计快照",
+        "`Print()` —— 格式化成字符串（`%.3f MiB`）",
+        "`INT64_FMT` —— int64 的格式串宏",
+        "`CategoryName` / `UsedSize` / `TotalSize` / `TotalOptionalSize` —— 4 个字段",
+        "`TMap<FString, int64> FileSizes` —— 每个文件的大小",
+        "`TArray<FString> Directories` —— 目录列表",
+        "`GetStat()` —— 加读锁后构造快照",
+        "`GetLockRegistry()` —— 取锁注册表"
+      ],
+      "rows": [
+        ["第 247~267 行", "`CategoryStat` 结构"],
+        ["第 269~274 行", "`GetStat`"],
+        ["第 276 行", "`GetLockRegistry`"]
+      ],
+      "analogy": "像仓库盘点表：拍个快照，之后慢慢看。"
+    },
+    {
+      "title": "十、`TryUpdateQuota`（CAS 循环）+ `ShouldManageFile`",
+      "start": 278,
+      "end": 341,
+      "new": [
+        "`TryUpdateQuota(OldFileSize, NewFileSize, Flags)` —— 尝试更新配额",
+        "`if (NewFileSize <= OldFileSize)` —— 缩小或不变，直接减",
+        "`EnumHasAnyFlags(Flags, OnlyUpdateIfLess)` —— 带该标志就返回（不更新）",
+        "`EnumHasAnyFlags(Flags, RespectQuota) && StorageQuota >= 0` —— 需要查配额",
+        "`do { ... } while (!UsedQuota.compare_exchange_weak(...))` —— **CAS 循环**（无锁原子更新）",
+        "`if (NewUsedQuota > StorageQuota) return RespectQuota` —— 超配额",
+        "`UsedQuota += (NewFileSize - OldFileSize)` —— 无配额限制时直接原子加",
+        "`ShouldManageFile(Filename)` —— 遍历目录判断是否属于本分类",
+        "`std::atomic<int64> UsedQuota{ 0 }` —— 已用配额（原子）",
+        "`mutable FRWLock FileSizesLock` —— 读写锁（`mutable` 允许 const 方法加锁）"
+      ],
+      "rows": [
+        ["第 279~288 行", "缩小分支"],
+        ["第 290~293 行", "`OnlyUpdateIfLess` 分支"],
+        ["第 295~309 行", "CAS 循环（查配额）"],
+        ["第 311~313 行", "无配额限制分支"],
+        ["第 315~326 行", "`ShouldManageFile`"],
+        ["第 328~341 行", "8 个成员"]
+      ],
+      "analogy": "像抢购：先看库存够不够（CAS 循环），够就扣，不够就拒。"
+    },
+    {
+      "title": "十一、`FPersistentStorageManager` 声明 + `IsReady` + `Initialize`",
+      "start": 343,
+      "end": 422,
+      "new": [
+        "`class FPersistentStorageManager` —— 持久化存储管理器（单例）",
+        "**为什么整个类不加 `CORE_API`** —— 会导出 `FCategoryInfo`，强制生成 `FPersistentStorageCategory` 拷贝构造，而 `std::atomic` 不可拷贝",
+        "`IsReady()` —— 三重检查：`GConfig` 就绪 + 命令行已初始化 + 无致命错误",
+        "`static Get()` —— 取单例（实现在 .cpp）",
+        "`Initialize()` —— 初始化（起后台任务扫描所有根目录）",
+        "`AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [](){...})` —— 后台任务",
+        "`FInitStorageVisitor` —— 初始化扫描访问者（`EDirectoryVisitorFlags::ThreadSafe` 允许并行）",
+        "`IPlatformFile::GetPlatformPhysical().IterateDirectoryRecursively(...)` —— 递归扫描",
+        "`FManagedStorageScopeFileLock ScopeFileLock(File)` —— 加文件锁",
+        "`ensureAlways(StatData.bIsValid)` —— 断言元数据有效"
+      ],
+      "rows": [
+        ["第 343~347 行", "类声明 + 说明"],
+        ["第 348~355 行", "`IsReady`"],
+        ["第 357~360 行", "`Get` / 构造"],
+        ["第 362~367 行", "`Initialize` 开头"],
+        ["第 370~419 行", "后台扫描任务"],
+        ["第 421~422 行", "标记已初始化"]
+      ],
+      "analogy": "像仓库管理员上班第一件事：把所有货架扫一遍，登记现有库存。"
+    },
+    {
+      "title": "十二、`TryManageFile` ×2 + `TryManageFileInternal`",
+      "start": 424,
+      "end": 463,
+      "new": [
+        "`TryManageFile(const FString&)` —— 尝试托管（拷贝版）",
+        "`TryManageFile(FString&&)` —— 尝试托管（移动版）",
+        "`FPaths::ConvertRelativePathToFull(...)` —— 转完整路径",
+        "`TryManageFileInternal(OutFile)` —— 内部实现：判断属于哪个分类",
+        "遍历所有分类，`Category.IsInCategory(...)` 命中就记录索引",
+        "`Algo::FindByPredicate(RootDirectories, lambda)` —— 查是否在某个根目录下",
+        "`OutFile.Category = Categories.GetDefaultCategoryIndex()` —— 归入默认分类"
+      ],
+      "rows": [
+        ["第 424~432 行", "`TryManageFile`（拷贝版）"],
+        ["第 434~442 行", "`TryManageFile`（移动版）"],
+        ["第 445~463 行", "`TryManageFileInternal`"]
+      ],
+      "analogy": "像给新货分类：先看属于哪个专区，不属于任何专区就放「默认区」。"
+    },
+    {
+      "title": "十三、10 个公开方法",
+      "start": 465,
+      "end": 606,
+      "new": [
+        "`AddOrUpdateFile(File, FileSize, Flags)` —— 添加或更新文件大小",
+        "`RemoveFileFromManager(File)` —— 从管理器移除文件",
+        "`GetTotalUsedSize()` —— 所有分类的总已用大小",
+        "`GetPersistentStorageUsage(Path, Used, Remaining, Quota, OptionalQuota)` —— 按路径查使用情况",
+        "`GetPersistentStorageUsageByCategory(...)` —— 按分类名查",
+        "`GetPersistentStorageSize(Used, Required, Optional)` —— 取总大小信息",
+        "`IsInitialized()` —— 是否已初始化",
+        "`IsCategoryForFileFull(File)` —— 文件所属分类是否已满",
+        "`GenerateCategoryStats()` —— 生成所有分类的统计快照",
+        "`GetCategoryStat(InCategory)` —— 取指定分类的统计（`TOptional`）",
+        "`GetRootDirectories()` —— 取所有根目录（`TArrayView`）"
+      ],
+      "rows": [
+        ["第 466~475 行", "`AddOrUpdateFile`"],
+        ["第 477~485 行", "`RemoveFileFromManager`"],
+        ["第 487~496 行", "`GetTotalUsedSize`"],
+        ["第 498~526 行", "`GetPersistentStorageUsage`"],
+        ["第 528~543 行", "`GetPersistentStorageUsageByCategory`"],
+        ["第 545~560 行", "`GetPersistentStorageSize`"],
+        ["第 562~575 行", "`IsInitialized` / `IsCategoryForFileFull`"],
+        ["第 577~604 行", "`GenerateCategoryStats` / `GetCategoryStat`"],
+        ["第 606 行", "`GetRootDirectories`"]
+      ],
+      "analogy": "像仓库的 10 个查询窗口：查总量、查分类、查路径、查是否满……"
+    },
+    {
+      "title": "十四、私有成员：`FRootDirInfo` + `FCategoryInfo`",
+      "start": 608,
+      "end": 647,
+      "new": [
+        "`friend class FManagedStorageScopeFileLock` —— 友元（访问 `Categories`）",
+        "`bool bInitialized` —— 是否已初始化",
+        "`struct FRootDirInfo` —— 根目录信息（**包装类，防止初始化后修改**）",
+        "`Init(TArrayView<const FPersistentStorageCategory>)` —— 初始化（实现在 .cpp）",
+        "`GetRootDirectories()` —— 返回 `TArrayView`（只读视图）",
+        "`struct FCategoryInfo` —— 分类信息（**包装类，防止初始化后扩容**）",
+        "`FCategoryInfo(TArray<FPersistentStorageCategory>&&, int32)` —— 构造（实现在 .cpp）",
+        "`GetCategories()` —— 返回 `TArrayView`（2 个重载）",
+        "`GetDefaultCategory()` —— 取默认分类（2 个重载）",
+        "`GetDefaultCategoryIndex()` —— 取默认分类索引",
+        "`static InitCategories()` —— 初始化分类（实现在 .cpp）"
+      ],
+      "rows": [
+        ["第 608~611 行", "友元 + `bInitialized`"],
+        ["第 613~624 行", "`FRootDirInfo`"],
+        ["第 626~644 行", "`FCategoryInfo`"],
+        ["第 646~647 行", "`InitCategories` + 类结束"]
+      ],
+      "analogy": "像仓库的「货架布局图」：初始化后就不能改，防止运行中有人乱动。"
+    },
+    {
+      "title": "十五、`FManagedStorageFileWriteHandle`",
+      "start": 649,
+      "end": 821,
+      "new": [
+        "`class FManagedStorageFileWriteHandle : public IFileHandle` —— 托管存储的写句柄",
+        "`IsReady()` —— 转调管理器的 `IsReady`",
+        "`TryManageFile()` —— 尝试托管本文件（懒托管）",
+        "构造函数：保存底层句柄 + 托管文件",
+        "析构函数：**更新文件大小**（`AddOrUpdateFile(File, FileHandle->Size())`）",
+        "`Tell` / `Seek` / `SeekFromEnd` / `Read` / `ReadAt` / `Size` / `ShrinkBuffers` —— 7 个纯转调",
+        "`Write(Source, BytesToWrite)` —— **写前查配额**",
+        "`FMath::Max(FileHandle->Tell() + BytesToWrite, FileHandle->Size())` —— 算写入后新大小",
+        "`AddOrUpdateFile(File, NewSize, RespectQuota)` —— 查配额",
+        "`if (bIsFileCategoryFull)` —— 超配额就返回 false",
+        "`verify(Manager.AddOrUpdateFile(File, FileSize) == None)` —— 写失败时回滚配额",
+        "`Flush(bFullFlush)` —— 刷新 + 大小更新",
+        "`Truncate(NewSize)` —— 截断 + 配额检查（扩大时查）"
+      ],
+      "rows": [
+        ["第 649~667 行", "类声明 + `IsReady` / `TryManageFile`"],
+        ["第 669~686 行", "构造 / 析构"],
+        ["第 688~711 行", "5 个纯转调"],
+        ["第 713~745 行", "`Write`（查配额）"],
+        ["第 747~750 行", "`Size`"],
+        ["第 752~774 行", "`Flush`"],
+        ["第 776~811 行", "`Truncate`"],
+        ["第 813~821 行", "`ShrinkBuffers` + 成员"]
+      ],
+      "analogy": "像带限额的信用卡：刷之前先查额度，超了就拒。"
+    },
+    {
+      "title": "十六、`TManagedStoragePlatformFile<BaseClass>` 构造",
+      "start": 823,
+      "end": 856,
+      "new": [
+        "**为什么用模板而不是多态包装** —— 很多代码期望物理层不是包装器",
+        "`template<class BaseClass> class TManagedStoragePlatformFile : public BaseClass` —— 模板继承",
+        "`IsReady()` —— 转调管理器的 `IsReady`",
+        "构造函数：**校验基类实现**",
+        "`&BaseClass::DeleteDirectoryRecursively == &IPlatformFile::DeleteDirectoryRecursively` —— 函数指针比较",
+        "`LowLevelFatalError(...)` —— 致命错误（静态初始化期 `UE_LOG` 不可用）",
+        "**为什么校验** —— 记账依赖基类调用 `DeleteFile()` / `CopyFile()`"
+      ],
+      "rows": [
+        ["第 823~826 行", "说明 + 类声明"],
+        ["第 828~833 行", "`IsReady`"],
+        ["第 837~847 行", "校验 `DeleteDirectoryRecursively`"],
+        ["第 849~856 行", "校验 `CopyDirectoryTree`"]
+      ],
+      "analogy": "像装监控前先确认：这栋楼的电路是不是标准接法，不是就报警。"
+    },
+    {
+      "title": "十七、`DeleteFile` / `DeleteFiles`",
+      "start": 858,
+      "end": 914,
+      "new": [
+        "`DeleteFile(Filename)` —— 删除文件（带记账）",
+        "`if (!IsReady())` —— 未就绪直接透传",
+        "`Manager.TryManageFile(Filename)` —— 尝试托管",
+        "`FManagedStorageScopeFileLock ScopeFileLock(ManagedFile)` —— 加文件锁",
+        "`Manager.RemoveFileFromManager(ManagedFile)` —— 删除成功后从管理器移除",
+        "`DeleteFiles(Filenames)` —— 批量删除",
+        "`TArray<TPair<FPersistentManagedFile, FManagedStorageScopeFileLock>> FileLocks` —— 每个文件一把锁",
+        "`FileLocks.Emplace(ManagedFile, MoveTemp(ManagedFile))` —— 加锁并保存",
+        "`if (!BaseClass::FileExists(Filenames[i]))` —— 检查是否真的删掉了",
+        "`UE_LOG(..., Warning, ...)` —— 文件还在磁盘上时打警告"
+      ],
+      "rows": [
+        ["第 858~878 行", "`DeleteFile`"],
+        ["第 880~914 行", "`DeleteFiles`（批量）"]
+      ],
+      "analogy": "像销毁文件：删之前先登记，删完确认真的没了，没删掉就报警。"
+    },
+    {
+      "title": "十八、`MoveFile`",
+      "start": 916,
+      "end": 982,
+      "new": [
+        "`MoveFile(To, From)` —— 移动文件（带记账）",
+        "`Manager.TryManageFile(To)` / `(From)` —— 托管源和目标",
+        "`FManagedStorageScopeFileLock ScopeFileLockTo(ManagedTo)` —— 加目标锁",
+        "`FManagedStorageScopeFileLock ScopeFileLockFrom(ManagedFrom)` —— 加源锁",
+        "`this->FileSize(From)` —— 取源文件大小",
+        "`AddOrUpdateFile(ManagedTo, SizeFrom, OnlyUpdateIfLess | RespectQuota)` —— 查目标配额",
+        "`EnumHasAnyFlags(Result, RespectQuota)` —— 超配额就拒",
+        "`BaseClass::MoveFile(To, From)` —— 真正移动",
+        "**失败时的处理** —— 某些实现支持跨卷移动，不要假设文件系统状态",
+        "`if (ManagedFrom && !this->FileExists(From))` —— 源已不存在就移除记账",
+        "`if (!this->FileExists(To))` —— 目标不存在就移除记账，否则更新大小"
+      ],
+      "rows": [
+        ["第 916~921 行", "未就绪透传"],
+        ["第 923~929 行", "托管 + 加锁"],
+        ["第 931~942 行", "查目标配额"],
+        ["第 944~949 行", "成功：更新记账"],
+        ["第 950~979 行", "失败：按实际状态修正记账"],
+        ["第 981~982 行", "返回结果"]
+      ],
+      "analogy": "像搬家：先确认新家放得下（查配额），搬完再更新两边的账。"
+    },
+    {
+      "title": "十九、`OpenWrite`",
+      "start": 984,
+      "end": 1028,
+      "new": [
+        "`OpenWrite(Filename, bAppend, bAllowRead)` —— 打开文件写（带配额检查）",
+        "**未就绪时也包装句柄** —— `FManagedStorageFileWriteHandle` 会在就绪后自动开始托管",
+        "`Manager.IsCategoryForFileFull(ManagedFile)` —— 分类已满就拒",
+        "`FManagedStorageScopeFileLock ScopeFileLock(ManagedFile)` —— 加文件锁",
+        "`Manager.AddOrUpdateFile(ManagedFile, InnerHandle->Size())` —— 登记初始大小",
+        "`if (ManagedFile)` —— 被托管就包一层，否则直接返回底层句柄"
+      ],
+      "rows": [
+        ["第 984~999 行", "未就绪分支（也包装）"],
+        ["第 1001~1009 行", "查分类是否已满"],
+        ["第 1011~1019 行", "加锁 + 打开 + 登记"],
+        ["第 1020~1028 行", "按是否托管决定包装"]
+      ],
+      "analogy": "像开新账户：先查额度够不够，够就开户并登记初始余额。"
+    },
+    {
+      "title": "二十、`CopyFile`",
+      "start": 1030,
+      "end": 1085,
+      "new": [
+        "`CopyFile(To, From, ReadFlags, WriteFlags)` —— 复制文件（带配额检查）",
+        "`Manager.TryManageFile(To)` / `(From)` —— 托管源和目标",
+        "`FManagedStorageScopeFileLock ScopeFileLockTo(ManagedTo)` —— 加目标锁",
+        "`FManagedStorageScopeFileLock ScopeFileLockFrom(ManagedFrom)` —— 加源锁",
+        "`this->FileSize(From)` —— 取源文件大小",
+        "`AddOrUpdateFile(ManagedTo, SizeFrom, OnlyUpdateIfLess | RespectQuota)` —— 查目标配额",
+        "`BaseClass::CopyFile(To, From, ReadFlags, WriteFlags)` —— 真正复制",
+        "**失败时的处理** —— 按实际状态修正记账"
+      ],
+      "rows": [
+        ["第 1030~1035 行", "未就绪透传"],
+        ["第 1037~1043 行", "托管 + 加锁"],
+        ["第 1045~1056 行", "查目标配额"],
+        ["第 1058~1062 行", "成功：更新记账"],
+        ["第 1063~1081 行", "失败：按实际状态修正"],
+        ["第 1083~1085 行", "返回结果 + 类结束"]
+      ],
+      "analogy": "像复印文件：先确认纸够不够（查配额），复印完更新两边的账。"
+    }
+  ],
+  "syntax": [
+    ["`std::atomic<int64> X{ 0 }`", "原子变量", "`std::atomic<int64> UsedQuota{ 0 };`"],
+    ["`X.compare_exchange_weak(A, B)`", "CAS 原子比较交换", "`UsedQuota.compare_exchange_weak(OldUsedQuota, NewUsedQuota)`"],
+    ["`mutable T X`", "允许 const 方法修改", "`mutable FRWLock FileSizesLock;`"],
+    ["`FReadScopeLock L(&RWLock)`", "读锁（RAII）", "`FReadScopeLock ScopeLock(FileSizesLock);`"],
+    ["`FWriteScopeLock L(&RWLock)`", "写锁（RAII）", "`FWriteScopeLock ScopeLock(FileSizesLock);`"],
+    ["`Map.FindOrAddByHash(H, K)`", "按哈希找到或新建", "`FileLockMap.FindOrAddByHash(KeyHash, InFilename)`"],
+    ["`Map.RemoveAndCopyValue(K, Out)`", "移除并取出值", "`FileSizes.RemoveAndCopyValue(Filename, OldSize)`"],
+    ["`EnumHasAnyFlags(E, F)`", "枚举位测试", "`EnumHasAnyFlags(Result, RespectQuota)`"],
+    ["`TOptional<T>`", "可选值容器", "`TOptional<CategoryStat> Result;`"],
+    ["`TArrayView<const T>`", "只读数组视图", "`TArrayView<const FString> GetRootDirectories() const`"],
+    ["`template<class B> class X : public B`", "模板继承", "`template<class BaseClass> class TManagedStoragePlatformFile : public BaseClass`"],
+    ["`&A::F == &B::F`", "函数指针比较", "`&BaseClass::DeleteFile == &IPlatformFile::DeleteFile`"],
+    ["`LowLevelFatalError(TEXT(\"...\"))`", "致命错误（静态初始化期可用）", "`LowLevelFatalError(TEXT(\"...\"));`"],
+    ["`AsyncTask(ENamedThreads::X, lambda)`", "起异步任务", "`AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [](){...});`"]
+  ],
+  "diff": [
+    ["代码行", "1085 行", "1953 行", "多出的是每行上方的中文注释"],
+    ["非注释代码行", "846 行", "846 行", "**逐字一致**"],
+    ["注释语言", "英文", "中文", "全部译成中文"],
+    ["`/// <summary>` 文档注释", "英文原文", "中文", "已译"],
+    ["`TEXT(\"...\")` 字符串", "英文原文", "保留英文", "运行时字符串，不翻译"]
+  ],
+  "todo": [
+    "还原文件已生成：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileManagedStorageWrapper.h`（1953 行）",
+    "脚本验收：`codeOurs=846 / codeEngine=846 / diff=0`",
+    "确认后下一个：`HAL\\IPlatformFileModule.h`（415 字节）"
+  ],
+  "src": [
+    "引擎：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileManagedStorageWrapper.h`（1085 行）",
+    "还原：`E:\\ue5\\game_design\\code\\ue5Learing\\ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\IPlatformFileManagedStorageWrapper.h`（1953 行）",
+    "总 md：`AI_Learning_Notes\\从零复刻ue5\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\15_IPlatformFileManagedStorageWrapper.h_总md.md`"
+  ]
+}

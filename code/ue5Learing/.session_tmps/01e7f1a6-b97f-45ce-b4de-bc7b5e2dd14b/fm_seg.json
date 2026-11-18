@@ -1,0 +1,339 @@
+﻿{
+  "title": "# 21 — `HAL/FileManager.h` 逐行注释版（超详细）",
+  "header": [
+    "> 依据：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FileManager.h`（**291 行**）",
+    "> 你新建文件：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FileManager.h`",
+    "> **⚠️ 本节不能独立编译**——依赖 `GenericPlatform/GenericPlatformFile.h` 的 `IPlatformFile` / `FFileStatData`。",
+    "> **注意**：这份是**讲解版**（每行代码上方都有中文注释），还原文件已按它生成。"
+  ],
+  "why": [
+    "引擎里到处要读写文件：加载资源、存配置、导日志。如果每个地方都直接调 `fopen` / `CreateFile`，跨平台就崩了。所以 UE 抽象出 `IFileManager` —— **文件操作的统一入口**，各平台各自实现（`FWindowsFileManager` / `FUnixFileManager`…）。",
+    "",
+    "**它包含 4 个枚举 + 1 个接口 + 1 个回调**：",
+    "",
+    "| 类型 | 作用 |",
+    "|---|---|",
+    "| `EFileWrite` | 写文件标志位（7 个，可组合） |",
+    "| `EFileRead` | 读文件标志位（4 个，可组合） |",
+    "| `ECopyResult` | 复制结果码（3 个） |",
+    "| `EFileOpenFlags` | 打开文件标志位（3 个） |",
+    "| `FCopyProgress` | 复制进度回调接口 |",
+    "| `IFileManager` | **文件管理器接口**（40+ 个纯虚函数） |",
+    "",
+    "**说个场景**：你想读一个文件：",
+    "",
+    "```cpp",
+    "FArchive* Ar = IFileManager::Get().CreateFileReader(TEXT(\"D:/Data.bin\"));",
+    "if (Ar) { Ar->Serialize(Buffer, Size); delete Ar; }   // 用完必须自己 delete",
+    "```",
+    "",
+    "**`IFileManager` 的 40+ 个方法分 8 类**：",
+    "",
+    "| 类别 | 方法 |",
+    "|---|---|",
+    "| **打开** | `CreateFileReader` / `CreateFileWriter` / `CreateDebugFileWriter` |",
+    "| **增删改** | `Delete` / `Copy` / `Move` / `MakeDirectory` / `DeleteDirectory` |",
+    "| **查询** | `FileExists` / `DirectoryExists` / `IsReadOnly` / `FileSize` / `GetStatData` |",
+    "| **查找** | `FindFiles`（2 个重载）/ `FindFilesRecursive` |",
+    "| **遍历** | `IterateDirectory` / `IterateDirectoryRecursively` / `IterateDirectoryStat` / `IterateDirectoryStatRecursively`（各 2 个重载 = 8 个） |",
+    "| **时间** | `GetFileAgeSeconds` / `GetTimeStamp` / `GetTimeStampPair` / `SetTimeStamp` / `GetAccessTimeStamp` |",
+    "| **路径** | `ConvertToRelativePath` / `ConvertToAbsolutePathForExternalAppForRead` / `ForWrite` / `GetFilenameOnDisk` |",
+    "| **其他** | `Get` / `ProcessCommandLineOptions` / `SetSandboxEnabled` / `IsSandboxEnabled` / `SendMessageToServer` |",
+    "",
+    "> 🔑 **一句话**：`FileManager.h` = **文件操作的「总服务台」**，40+ 个窗口，各平台自己派人值班。"
+  ],
+  "segments": [
+    {
+      "title": "一、版权头 + include + 文件名长度宏",
+      "start": 1,
+      "end": 11,
+      "new": [
+        "`CoreTypes.h` —— `uint8` / `uint32` / `int64` / `TCHAR`",
+        "`Containers/UnrealString.h` —— `FString`",
+        "`Misc/DateTime.h` —— `FDateTime`",
+        "`GenericPlatform/GenericPlatformFile.h` —— `IPlatformFile` / `FFileStatData`",
+        "`MAX_UNREAL_FILENAME_LENGTH_DEPRECATED` —— 文件名最大长度（已废弃）",
+        "`PLATFORM_MAX_FILEPATH_LENGTH_DEPRECATED` —— 平台定义的最大路径长度"
+      ],
+      "rows": [
+        ["第 1 行", "版权头"],
+        ["第 3 行", "头文件保护"],
+        ["第 5~8 行", "4 个 include"],
+        ["第 10~11 行", "文件名长度宏"]
+      ],
+      "analogy": "像开工前领工具：类型、字符串、时间、平台文件接口，四样齐了。"
+    },
+    {
+      "title": "二、`EFileWrite` 写文件标志位",
+      "start": 14,
+      "end": 23,
+      "new": [
+        "`enum EFileWrite` —— 普通枚举（非 enum class），可直接当整数用",
+        "`FILEWRITE_None = 0x00` —— 无标志",
+        "`FILEWRITE_NoFail = 0x01` —— 失败不断言",
+        "`FILEWRITE_NoReplaceExisting = 0x02` —— 不覆盖已存在文件",
+        "`FILEWRITE_EvenIfReadOnly = 0x04` —— 只读也写",
+        "`FILEWRITE_Append = 0x08` —— 追加模式",
+        "`FILEWRITE_AllowRead = 0x10` —— 允许同时读",
+        "`FILEWRITE_Silent = 0x20` —— 静默（失败不打印）",
+        "`0x01` / `0x02` / `0x04` … —— 十六进制位标志，可 `|` 组合"
+      ],
+      "rows": [
+        ["第 14~15 行", "枚举声明"],
+        ["第 16~22 行", "7 个标志位"],
+        ["第 23 行", "枚举结束"]
+      ],
+      "analogy": "像七个开关：想覆盖就关掉 NoReplace，想追加就打开 Append，可以同时拨好几个。"
+    },
+    {
+      "title": "三、`EFileRead` 读文件标志位",
+      "start": 26,
+      "end": 32,
+      "new": [
+        "`FILEREAD_None = 0x00` —— 无标志",
+        "`FILEREAD_NoFail = 0x01` —— 失败不断言",
+        "`FILEREAD_Silent = 0x02` —— 静默",
+        "`FILEREAD_AllowWrite = 0x04` —— 允许同时写"
+      ],
+      "rows": [
+        ["第 26~27 行", "枚举声明"],
+        ["第 28~31 行", "4 个标志位"],
+        ["第 32 行", "枚举结束"]
+      ],
+      "analogy": "读文件只有四个开关，比写少三个。"
+    },
+    {
+      "title": "四、`ECopyResult` 复制结果码",
+      "start": 35,
+      "end": 40,
+      "new": [
+        "`COPY_OK = 0x00` —— 成功",
+        "`COPY_Fail = 0x01` —— 失败",
+        "`COPY_Canceled = 0x02` —— 被取消"
+      ],
+      "rows": [
+        ["第 35~36 行", "枚举声明"],
+        ["第 37~39 行", "3 个结果码"],
+        ["第 40 行", "枚举结束"]
+      ],
+      "analogy": "像快递的三种状态：已签收、投递失败、用户取消。"
+    },
+    {
+      "title": "五、`FCopyProgress` 进度回调",
+      "start": 43,
+      "end": 46,
+      "new": [
+        "`struct FCopyProgress` —— 复制进度回调接口",
+        "`virtual bool Poll(float Fraction) = 0` —— 纯虚函数，每复制一段回调一次",
+        "`Fraction` —— 0~1 的进度值",
+        "返回 `false` 表示取消复制"
+      ],
+      "rows": [
+        ["第 43~44 行", "结构体声明"],
+        ["第 45 行", "纯虚 `Poll`"],
+        ["第 46 行", "结构体结束"]
+      ],
+      "analogy": "像下载进度条：每下一点就回调一次，你返回 false 就取消。"
+    },
+    {
+      "title": "六、`EFileOpenFlags` 打开标志位",
+      "start": 49,
+      "end": 54,
+      "new": [
+        "`IO_READ = 0x01` —— 以读方式打开",
+        "`IO_WRITE = 0x02` —— 以写方式打开",
+        "`IO_APPEND = 0x40` —— 写时保留已有数据，指针移到末尾"
+      ],
+      "rows": [
+        ["第 49~50 行", "枚举声明"],
+        ["第 51~53 行", "3 个标志位"],
+        ["第 54 行", "枚举结束"]
+      ],
+      "analogy": "像开门的三种方式：只进（读）、只出（写）、从末尾接着写（追加）。"
+    },
+    {
+      "title": "七、`IFileManager` 类声明 + 单例 + 沙箱",
+      "start": 56,
+      "end": 74,
+      "new": [
+        "`class IFileManager` —— 文件管理器接口",
+        "`protected: IFileManager() {}` —— 构造函数 protected，只能派生",
+        "`static CORE_API IFileManager& Get()` —— 取全局单例",
+        "`ProcessCommandLineOptions()` —— 解析命令行",
+        "`SetSandboxEnabled(bool)` / `IsSandboxEnabled()` —— 沙箱开关"
+      ],
+      "rows": [
+        ["第 56~61 行", "类声明 + protected 构造"],
+        ["第 66 行", "`Get()` 单例"],
+        ["第 69 行", "`ProcessCommandLineOptions`"],
+        ["第 72~74 行", "沙箱开关"]
+      ],
+      "analogy": "像服务台的总机：只有一个号码（Get），打过去什么都能问。"
+    },
+    {
+      "title": "八、打开文件三件套",
+      "start": 85,
+      "end": 101,
+      "new": [
+        "`CreateFileReader(Filename, ReadFlags=0)` —— 打开读，返回 `FArchive*`",
+        "`CreateFileWriter(Filename, WriteFlags=0)` —— 打开写，返回 `FArchive*`",
+        "`CreateDebugFileWriter(...)` —— 打开调试文件写（`#if ALLOW_DEBUG_FILES` 内）",
+        "`FArchive*` —— 序列化基类，读写都通过它",
+        "**用完必须调用方 `delete`** —— 引擎注释明确说明"
+      ],
+      "rows": [
+        ["第 85 行", "`CreateFileReader`"],
+        ["第 96 行", "`CreateFileWriter`"],
+        ["第 99~101 行", "`CreateDebugFileWriter`（条件编译）"]
+      ],
+      "analogy": "像借书：借的时候给你一本书（FArchive），还的时候要你自己还（delete）。"
+    },
+    {
+      "title": "九、增删改查 9 个方法",
+      "start": 104,
+      "end": 128,
+      "new": [
+        "`IsReadOnly(Filename)` —— 查询只读",
+        "`Delete(Filename, RequireExists, EvenReadOnly, Quiet)` —— 删除文件",
+        "`Copy(Dest, Src, Replace, EvenIfReadOnly, Attributes, Progress, ReadFlags, WriteFlags)` —— 复制（8 个参数）",
+        "`Move(Dest, Src, Replace, EvenIfReadOnly, Attributes, bDoNotRetryOrError)` —— 移动/重命名",
+        "`FileExists` / `DirectoryExists` —— 存在性查询",
+        "`MakeDirectory(Path, Tree)` —— 创建目录（Tree 递归）",
+        "`DeleteDirectory(Path, RequireExists, Tree)` —— 删除目录",
+        "`GetStatData(FilenameOrDirectory)` —— 取元数据（`FFileStatData`）"
+      ],
+      "rows": [
+        ["第 104 行", "`IsReadOnly`"],
+        ["第 107 行", "`Delete`"],
+        ["第 110 行", "`Copy`（参数最多）"],
+        ["第 113 行", "`Move`"],
+        ["第 116~119 行", "`FileExists` / `DirectoryExists`"],
+        ["第 122~125 行", "`MakeDirectory` / `DeleteDirectory`"],
+        ["第 128 行", "`GetStatData`"]
+      ],
+      "analogy": "像文件柜的九个抽屉：查、删、复制、移动、看有没有、建目录、删目录、看详情。"
+    },
+    {
+      "title": "十、查找 3 个方法",
+      "start": 131,
+      "end": 146,
+      "new": [
+        "`FindFiles(FileNames, Filename, Files, Directories)` —— 按通配符查找",
+        "`FindFiles(FoundFiles, Directory, FileExtension)` —— 按扩展名过滤",
+        "`FindFilesRecursive(FileNames, StartDirectory, Filename, Files, Directories, bClearFileNames)` —— 递归查找",
+        "`TArray<FString>&` —— 输出参数（引用传数组）"
+      ],
+      "rows": [
+        ["第 131 行", "`FindFiles`（通配符版）"],
+        ["第 143 行", "`FindFiles`（扩展名版）"],
+        ["第 146 行", "`FindFilesRecursive`"]
+      ],
+      "analogy": "像找东西：按名字找（通配符）、按类型找（扩展名）、连子文件夹一起找（递归）。"
+    },
+    {
+      "title": "十一、遍历目录 8 个方法",
+      "start": 154,
+      "end": 210,
+      "new": [
+        "`IterateDirectory(Directory, FDirectoryVisitor&)` —— 单层，虚接口访问者",
+        "`IterateDirectory(Directory, FDirectoryVisitorFunc)` —— 单层，函数对象访问者",
+        "`IterateDirectoryRecursively(...)` —— 递归，2 个重载",
+        "`IterateDirectoryStat(...)` —— 单层 + stat 数据，2 个重载",
+        "`IterateDirectoryStatRecursively(...)` —— 递归 + stat 数据，2 个重载",
+        "`IPlatformFile::FDirectoryVisitor` —— 虚接口访问者（要继承）",
+        "`IPlatformFile::FDirectoryVisitorFunc` —— 函数对象访问者（传 lambda）"
+      ],
+      "rows": [
+        ["第 154 行", "单层 + 虚接口"],
+        ["第 162 行", "单层 + 函数对象"],
+        ["第 170 行", "递归 + 虚接口"],
+        ["第 178 行", "递归 + 函数对象"],
+        ["第 186 行", "单层 stat + 虚接口"],
+        ["第 194 行", "单层 stat + 函数对象"],
+        ["第 202 行", "递归 stat + 虚接口"],
+        ["第 210 行", "递归 stat + 函数对象"]
+      ],
+      "analogy": "像查户口：单层/递归 × 虚接口/函数对象 × 带不带 stat = 8 种查法。"
+    },
+    {
+      "title": "十二、时间相关 5 个方法",
+      "start": 213,
+      "end": 236,
+      "new": [
+        "`GetFileAgeSeconds(Filename)` —— 文件年龄（秒）",
+        "`GetTimeStamp(Path)` —— 修改时间（失败返回 `FDateTime::MinValue()`）",
+        "`GetTimeStampPair(PathA, PathB, OutA, OutB)` —— 一次取两个（省系统调用）",
+        "`SetTimeStamp(Path, TimeStamp)` —— 设置修改时间",
+        "`GetAccessTimeStamp(Filename)` —— 最后访问时间"
+      ],
+      "rows": [
+        ["第 213 行", "`GetFileAgeSeconds`"],
+        ["第 218 行", "`GetTimeStamp`"],
+        ["第 226 行", "`GetTimeStampPair`"],
+        ["第 231 行", "`SetTimeStamp`"],
+        ["第 236 行", "`GetAccessTimeStamp`"]
+      ],
+      "analogy": "像查档案的时间戳：多久没改（年龄）、什么时候改的、什么时候被看过。"
+    },
+    {
+      "title": "十三、路径转换 3 个方法",
+      "start": 245,
+      "end": 263,
+      "new": [
+        "`ConvertToRelativePath(Filename)` —— 转相对路径",
+        "`ConvertToAbsolutePathForExternalAppForRead(Filename)` —— 转绝对路径（外部程序读）",
+        "`ConvertToAbsolutePathForExternalAppForWrite(Filename)` —— 转绝对路径（外部程序写）",
+        "**为什么分 Read / Write** —— 某些平台（如 macOS sandbox）读写路径不同"
+      ],
+      "rows": [
+        ["第 245 行", "`ConvertToRelativePath`"],
+        ["第 254 行", "`ConvertToAbsolutePathForExternalAppForRead`"],
+        ["第 263 行", "`ConvertToAbsolutePathForExternalAppForWrite`"]
+      ],
+      "analogy": "像给外人指路：自己人用相对地址（相对路径），外人必须给完整地址（绝对路径）。"
+    },
+    {
+      "title": "十四、`FileSize` / `SendMessageToServer` / `GetFilenameOnDisk`",
+      "start": 271,
+      "end": 291,
+      "new": [
+        "`FileSize(Filename)` —— 文件大小（字节），不存在返回 `INDEX_NONE`",
+        "`SendMessageToServer(Message, Handler)` —— 给文件服务器发消息（阻塞）",
+        "`GetFilenameOnDisk(Filename)` —— 返回与磁盘一致的大小写路径",
+        "`IPlatformFile::IFileServerMessageHandler*` —— 消息处理器"
+      ],
+      "rows": [
+        ["第 271 行", "`FileSize`"],
+        ["第 281 行", "`SendMessageToServer`"],
+        ["第 290 行", "`GetFilenameOnDisk`"],
+        ["第 291 行", "类结束"]
+      ],
+      "analogy": "像三个特殊窗口：问大小、给服务器捎话、问磁盘上真实的大小写。"
+    }
+  ],
+  "syntax": [
+    ["`enum X { A = 0x01, B = 0x02 }`", "位标志枚举", "`enum EFileWrite { FILEWRITE_NoFail = 0x01, ... }`"],
+    ["`virtual T F() = 0;`", "纯虚函数", "`virtual bool FileExists(const TCHAR*) = 0;`"],
+    ["`static CORE_API T& Get()`", "静态单例访问", "`static CORE_API IFileManager& Get();`"],
+    ["`T& Out`", "输出参数（引用）", "`TArray<FString>& FileNames`"],
+    ["`T* Ptr = nullptr`", "默认参数", "`FCopyProgress* Progress = nullptr`"],
+    ["`#if ALLOW_DEBUG_FILES`", "条件编译", "`#if ALLOW_DEBUG_FILES`"],
+    ["`protected: X() {}`", "protected 构造（只能派生）", "`IFileManager() {}`"]
+  ],
+  "diff": [
+    ["代码行", "291 行", "366 行", "多出的是每行上方的中文注释"],
+    ["非注释代码行", "85 行", "85 行", "**逐字一致**"],
+    ["注释语言", "英文", "中文", "全部译成中文"],
+    ["`@param` / `@return`", "英文说明", "中文说明", "保留 Doxygen 标签"]
+  ],
+  "todo": [
+    "还原文件已生成：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FileManager.h`（366 行）",
+    "脚本验收：`codeOurs=85 / codeEngine=85 / diff=0`",
+    "确认后下一个：`HAL\\FileManagerGeneric.h`（15333 字节）"
+  ],
+  "src": [
+    "引擎：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FileManager.h`（291 行）",
+    "还原：`E:\\ue5\\game_design\\code\\ue5Learing\\ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\FileManager.h`（366 行）",
+    "总 md：`AI_Learning_Notes\\从零复刻ue5\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\08_FileManager.h_总md.md`"
+  ]
+}

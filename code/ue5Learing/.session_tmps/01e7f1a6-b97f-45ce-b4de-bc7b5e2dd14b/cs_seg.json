@@ -1,0 +1,146 @@
+﻿{
+  "title": "# 16 — `HAL/CriticalSection.h` 逐行注释版（超详细）",
+  "header": [
+    "> 依据：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\CriticalSection.h`（**59 行**）",
+    "> 你新建文件：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\CriticalSection.h`",
+    "> **✅ 本节可独立编译**——只 include `HAL/PlatformMutex.h`。",
+    "> **注意**：这份是**讲解版**（每行代码上方都有中文注释），还原文件已按它生成。"
+  ],
+  "why": [
+    "多线程同时改同一块数据会出乱子。UE 用**互斥量**（mutex）解决：谁先拿到锁谁改，别人排队等。但不同平台（Windows / Linux / Mac / Android）的互斥量 API 各不相同，所以 UE 在 `PlatformMutex.h` 里定义了统一的 `FPlatformSharedMutex` / `FPlatformRecursiveMutex` / `FPlatformSystemWideMutex`。",
+    "",
+    "`CriticalSection.h` 做两件事：",
+    "",
+    "1. **把 `FPlatformSharedMutex` 包装成读写锁**（`UE::FPlatformRWLock`）—— 因为 `FPlatformSharedMutex` 的方法名是 `Lock` / `LockShared`，而 UE 上层代码期望的是 `WriteLock` / `ReadLock`",
+    "2. **给三个常用类型起短别名** —— `FCriticalSection` / `FRWLock` / `FSystemWideCriticalSection`",
+    "",
+    "**说个场景**：你写 `FCriticalSection Lock;` 保护一个 `TArray`。`FCriticalSection` 其实就是 `UE::FPlatformRecursiveMutex` 的别名 —— 同一线程可以重复加锁（递归），不会自己把自己锁死。",
+    "",
+    "> 🔑 **一句话**：`CriticalSection.h` = **互斥量的「统一门面」**，把平台差异藏起来，给上层三个好记的名字。"
+  ],
+  "segments": [
+    {
+      "title": "一、版权头 + include",
+      "start": 1,
+      "end": 5,
+      "new": [
+        "`#pragma once` —— 头文件防重复包含",
+        "`HAL/PlatformMutex.h` —— 三个平台互斥量类型的定义来源"
+      ],
+      "rows": [
+        ["第 1 行", "版权头"],
+        ["第 3 行", "头文件保护"],
+        ["第 5 行", "引入平台互斥量"]
+      ],
+      "analogy": "像开工前先领工具：互斥量是后面所有代码要用的家伙。"
+    },
+    {
+      "title": "二、`UE::FPlatformRWLock` 类声明",
+      "start": 7,
+      "end": 15,
+      "new": [
+        "`namespace UE` —— 引擎新版公共 API 命名空间",
+        "`class FPlatformRWLock final` —— 读写锁适配器，`final` 禁止继承",
+        "`public:` —— 公有区，对外暴露 6 个方法"
+      ],
+      "rows": [
+        ["第 7~8 行", "命名空间开始"],
+        ["第 10~12 行", "类说明注释"],
+        ["第 13 行", "类声明 + final"],
+        ["第 15 行", "公有区开始"]
+      ],
+      "analogy": "像给旧机器装个新面板：里面还是老零件，外面按钮换了好认的名字。"
+    },
+    {
+      "title": "三、写锁三件套",
+      "start": 16,
+      "end": 29,
+      "new": [
+        "`FORCEINLINE` —— 强制内联，零调用开销",
+        "`TryWriteLock()` —— 尝试获取写锁，不阻塞",
+        "`WriteLock()` —— 获取写锁，阻塞等待",
+        "`WriteUnlock()` —— 释放写锁",
+        "`Mutex.TryLock()` / `Mutex.Lock()` / `Mutex.Unlock()` —— 底层平台互斥量的对应方法"
+      ],
+      "rows": [
+        ["第 16~19 行", "`TryWriteLock` → `TryLock`"],
+        ["第 21~24 行", "`WriteLock` → `Lock`"],
+        ["第 26~29 行", "`WriteUnlock` → `Unlock`"]
+      ],
+      "analogy": "像厕所门上的三个动作：敲一下看有没有人（Try）、排队等（Lock）、出来开门（Unlock）。"
+    },
+    {
+      "title": "四、读锁三件套",
+      "start": 31,
+      "end": 44,
+      "new": [
+        "`TryReadLock()` —— 尝试获取读锁，不阻塞",
+        "`ReadLock()` —— 获取读锁，阻塞等待",
+        "`ReadUnlock()` —— 释放读锁",
+        "`Mutex.TryLockShared()` / `Mutex.LockShared()` / `Mutex.UnlockShared()` —— 底层共享锁方法"
+      ],
+      "rows": [
+        ["第 31~34 行", "`TryReadLock` → `TryLockShared`"],
+        ["第 36~39 行", "`ReadLock` → `LockShared`"],
+        ["第 41~44 行", "`ReadUnlock` → `UnlockShared`"]
+      ],
+      "analogy": "像图书馆：很多人可以同时看（共享读），但有人要改书就得清场（独占写）。"
+    },
+    {
+      "title": "五、私有成员 + 类结束",
+      "start": 46,
+      "end": 50,
+      "new": [
+        "`private:` —— 私有区",
+        "`FPlatformSharedMutex Mutex` —— 底层平台共享互斥量"
+      ],
+      "rows": [
+        ["第 46 行", "私有区开始"],
+        ["第 47 行", "底层互斥量成员"],
+        ["第 48 行", "类结束"],
+        ["第 50 行", "命名空间结束"]
+      ],
+      "analogy": "像发动机藏在车壳里：外面只看到方向盘和油门。"
+    },
+    {
+      "title": "六、三个类型别名",
+      "start": 52,
+      "end": 59,
+      "new": [
+        "`using X = Y;` —— C++11 类型别名（等价于 `typedef`）",
+        "`FCriticalSection` —— 递归互斥量别名（同一线程可重复加锁）",
+        "`FRWLock` —— 读写锁别名（多读单写）",
+        "`FSystemWideCriticalSection` —— 跨进程互斥量别名"
+      ],
+      "rows": [
+        ["第 52~53 行", "`FCriticalSection` 别名"],
+        ["第 55~56 行", "`FRWLock` 别名"],
+        ["第 58~59 行", "`FSystemWideCriticalSection` 别名"]
+      ],
+      "analogy": "像给人起小名：正式名字太长，日常都叫小名。"
+    }
+  ],
+  "syntax": [
+    ["`namespace X { }`", "命名空间", "`namespace UE { }`"],
+    ["`class X final`", "类，禁止被继承", "`class FPlatformRWLock final`"],
+    ["`FORCEINLINE`", "强制内联", "`FORCEINLINE bool TryWriteLock()`"],
+    ["`using A = B;`", "类型别名（C++11）", "`using FCriticalSection = UE::FPlatformRecursiveMutex;`"],
+    ["`public:` / `private:`", "访问控制", "`private: FPlatformSharedMutex Mutex;`"]
+  ],
+  "diff": [
+    ["代码行", "59 行", "89 行", "多出的是每行上方的中文注释"],
+    ["非注释代码行", "38 行", "38 行", "**逐字一致**"],
+    ["注释语言", "英文", "中文", "全部译成中文"],
+    ["`} // UE`", "保留原文", "保留原文 + 中文说明", "命名空间标记，不翻译"]
+  ],
+  "todo": [
+    "还原文件已生成：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\CriticalSection.h`（89 行）",
+    "脚本验收：`codeOurs=38 / codeEngine=38 / diff=0`",
+    "确认后下一个：`HAL\\DiskUtilizationTracker.h`（3302 字节）"
+  ],
+  "src": [
+    "引擎：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\CriticalSection.h`（59 行）",
+    "还原：`E:\\ue5\\game_design\\code\\ue5Learing\\ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\CriticalSection.h`（89 行）",
+    "总 md：`AI_Learning_Notes\\从零复刻ue5\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\03_CriticalSection.h_总md.md`"
+  ]
+}

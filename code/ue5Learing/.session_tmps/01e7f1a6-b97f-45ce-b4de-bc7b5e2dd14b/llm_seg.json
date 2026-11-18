@@ -1,0 +1,662 @@
+﻿{
+  "title": "# 32 — `HAL/LowLevelMemTracker.h` 逐行注释版（超详细）",
+  "header": [
+    "> 依据：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\LowLevelMemTracker.h`（**1127 行 / 59KB**）",
+    "> 你新建文件：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\LowLevelMemTracker.h`",
+    "> **⚠️ 本节不能独立编译**——依赖 `FTagTrace` / `AutoRTFM` / `FName`。",
+    "> **注意**：这份是**讲解版**（每行代码上方都有中文注释），还原文件已按它生成。",
+    "> **本文件特殊**：28 个块注释统一压成单行 `//` 中文注释，保证代码行零差异。"
+  ],
+  "why": [
+    "`stat LLM` 面板能告诉你「Textures 用了 800MB、Meshes 用了 300MB」。这套系统的核心就是 **LLM（Low Level Memory Tracker）**：它在**每一次 malloc/free** 时记录「这次分配属于哪个标签」，然后按标签汇总。",
+    "",
+    "`LowLevelMemTracker.h` 是 LLM 的**全部公开接口**，1127 行，包含：",
+    "",
+    "| 类别 | 内容 |",
+    "|---|---|",
+    "| **配置宏** | `ENABLE_LOW_LEVEL_MEM_TRACKER` / `LLM_ALLOW_ASSETS_TAGS` / `LLM_ALLOW_STATS` / `LLM_ENABLED_STAT_TAGS` |",
+    "| **断言宏** | `LLMCheck` / `LLMCheckf` / `LLMEnsure` |",
+    "| **枚举** | `ELLMTracker`（2 个）/ `ELLMTagSet`（3 个）/ `ELLMTag`（100+ 个）/ `ELLMAllocType`（4 个）/ `ESizeParams` |",
+    "| **标签列表** | `LLM_ENUM_GENERIC_TAGS(macro)` —— 100+ 个标签的 X-Macro |",
+    "| **作用域宏** | `LLM_SCOPE` / `LLM_SCOPE_DYNAMIC` / `LLM_PLATFORM_SCOPE` / `LLM_SCOPED_PAUSE_TRACKING` / `LLM_REALLOC_SCOPE` 等 20+ 个 |",
+    "| **标签定义宏** | `LLM_DEFINE_TAG` / `LLM_DECLARE_TAG` / `LLM_DEFINE_BOOTSTRAP_TAG` |",
+    "| **核心类** | `FLowLevelMemTracker`（主追踪器）/ `FLLMScope` / `FLLMScopeDynamic` / `FLLMPauseScope` / `FLLMClearScope` / `FLLMScopeFromPtr` / `FLLMTagDeclaration` / `FLLMAllocator` |",
+    "",
+    "**核心设计 ①：两个追踪器**（第 120~126 行）",
+    "",
+    "```cpp",
+    "enum class ELLMTracker : uint8",
+    "{",
+    "    Platform,   // 平台层：追踪内存管理系统（如 Binned2 的页）",
+    "    Default,    // 默认层：追踪引擎分配（GMalloc）",
+    "    Max,",
+    "};",
+    "```",
+    "",
+    "**为什么要两个**：`Platform` 追踪「分配器自己占了多少内存」，`Default` 追踪「游戏逻辑占了多少内存」。两者相加才是真实占用。",
+    "",
+    "**核心设计 ②：X-Macro 标签列表**（第 163~280 行）",
+    "",
+    "```cpp",
+    "#define LLM_ENUM_GENERIC_TAGS(macro) \\",
+    "    macro(Untagged, \"Untagged\", NAME_None, NAME_None, -1) \\",
+    "    macro(Total, \"Total\", GET_STATFNAME(STAT_TotalLLM), ..., -1) \\",
+    "    macro(Audio, \"Audio\", ..., ELLMTag::Audio) \\",
+    "    ... 100+ 行",
+    "```",
+    "",
+    "**为什么用 X-Macro**：同一份列表要展开成 3 种东西（枚举值、名字表、父标签表），X-Macro 保证三者永远同步。",
+    "",
+    "**核心设计 ③：`LLM_SCOPE` 的 RAII**（第 344~345 行）",
+    "",
+    "```cpp",
+    "#define LLM_SCOPE(Tag) \\",
+    "    FLLMScope SCOPE_NAME(Tag, false, ELLMTagSet::None, ELLMTracker::Default); \\",
+    "    UE_MEMSCOPE(Tag)",
+    "```",
+    "",
+    "`SCOPE_NAME` 用 `__LINE__` 生成唯一变量名，所以同一作用域可以写多个 `LLM_SCOPE`。",
+    "",
+    "**核心设计 ④：`LLM_SCOPE_DYNAMIC` 的 do/while**（第 346~371 行）",
+    "",
+    "```cpp",
+    "#define LLM_SCOPE_DYNAMIC(UniqueName, Tracker, TagSet, Constructor) \\",
+    "    FLLMScopeDynamic SCOPE_NAME(Tracker, TagSet); \\",
+    "    UE_MEMSCOPE_UNINITIALIZED(__LINE__); \\",
+    "    do { ... } while (false) /* do/while is added to require a semicolon */",
+    "```",
+    "",
+    "`do/while(false)` 是为了**强制要求分号** —— 否则 `if (x) LLM_SCOPE_DYNAMIC(...)` 会出问题。",
+    "",
+    "**核心设计 ⑤：`LLM_DEFINE_TAG` 的全局实例**（第 423 行）",
+    "",
+    "```cpp",
+    "#define LLM_DEFINE_TAG(UniqueNameWithUnderscores, ...) \\",
+    "    FLLMTagDeclaration PREPROCESSOR_JOIN(LLMTagDeclaration_, UniqueNameWithUnderscores)(TEXT(#UniqueNameWithUnderscores), ##__VA_ARGS__)",
+    "```",
+    "",
+    "定义一个**全局 `FLLMTagDeclaration` 实例**，它的构造函数会自动把标签注册到 LLM。",
+    "",
+    "**说个场景**：",
+    "",
+    "```cpp",
+    "// 定义一个自定义标签",
+    "LLM_DEFINE_TAG(MyGame_Weapons, TEXT(\"Weapons\"), NAME_None, GET_STATFNAME(STAT_MyWeaponsLLM));",
+    "",
+    "void LoadWeapon()",
+    "{",
+    "    LLM_SCOPE_BYTAG(MyGame_Weapons);   // 之后所有分配都归到 Weapons",
+    "    // ... 加载武器 ...",
+    "}",
+    "```",
+    "",
+    "**双分支设计**：`#if ENABLE_LOW_LEVEL_MEM_TRACKER` ... `#else`（第 1086~1127 行）—— 关闭 LLM 时所有宏变空，**零开销**。",
+    "",
+    "> 🔑 **一句话**：`LowLevelMemTracker.h` = **内存追踪的「总控台」**，2 个追踪器 + 100+ 个标签 + 20+ 个作用域宏。"
+  ],
+  "segments": [
+    {
+      "title": "一、版权头 + 平台支持判断 + 配置宏",
+      "start": 1,
+      "end": 52,
+      "new": [
+        "`CoreTypes.h` / `LowLevelMemTrackerDefines.h` / `ProfilingDebugging/TagTrace.h` / `AutoRTFM.h` —— 4 个 include",
+        "`PLATFORM_SUPPORTS_LLM` —— 平台是否支持 LLM（默认 1）",
+        "`LLM_ENABLED_ON_PLATFORM` —— 平台支持 且 没用固定 GMalloc 类",
+        "`#error` —— 单独定义 `ENABLE_LOW_LEVEL_MEM_TRACKER` 直接报错",
+        "`ENABLE_LOW_LEVEL_MEM_TRACKER` —— 配置启用 且 平台支持（派生宏）",
+        "`LLM_ALLOW_ASSETS_TAGS` —— 是否允许资产标签（默认 0）",
+        "`LLM_ALLOW_UOBJECTCLASSES_TAGS` —— 默认与资产标签相反",
+        "`LLM_ALLOW_STATS` —— 是否允许统计作为标签（默认 0）",
+        "`LLM_ENABLED_STAT_TAGS` —— 允许统计 或 允许资产标签"
+      ],
+      "rows": [
+        ["第 1~8 行", "版权头 + 4 个 include"],
+        ["第 10~16 行", "平台支持判断"],
+        ["第 18~21 行", "`ENABLE_LOW_LEVEL_MEM_TRACKER` 派生"],
+        ["第 23~52 行", "4 个配置宏"]
+      ],
+      "analogy": "像开工前的总开关：先确认平台支不支持，再决定开哪些子功能。"
+    },
+    {
+      "title": "二、断言宏（LLMCheck / LLMCheckf / LLMEnsure）",
+      "start": 54,
+      "end": 108,
+      "new": [
+        "9 个 include + `<atomic>` —— 容器、锁、平台、模板、FName",
+        "`UE::LLMPrivate::HandleAssert(bLog, Format, ...)` —— 处理断言",
+        "`TrueOnFirstCallOnly<T>(const T&)` —— 第一次调用返回 true（靠 lambda 唯一实例化模板）",
+        "`LLMTrueOnFirstCallOnly` —— 宏包装",
+        "`LLMCheckMessage(expr)` / `LLMCheckfMessage` / `LLMEnsureMessage` —— 3 个消息宏",
+        "`LLMCheck(expr)` —— 断言失败抛异常",
+        "`LLMCheckf(expr, format, ...)` —— 带格式的断言",
+        "`LLMEnsure(expr)` —— 断言失败只报一次（不抛异常）",
+        "`#else` —— 未开启 check 时全变空宏"
+      ],
+      "rows": [
+        ["第 54~65 行", "9 个 include + `<atomic>`"],
+        ["第 69~86 行", "`HandleAssert` + `TrueOnFirstCallOnly`"],
+        ["第 88~92 行", "`LLMTrueOnFirstCallOnly` 双分支"],
+        ["第 94~96 行", "3 个消息宏"],
+        ["第 98~100 行", "3 个断言宏"],
+        ["第 102~108 行", "`#else` 空宏"]
+      ],
+      "analogy": "像安全检查：`LLMCheck` 是「出事就停机」，`LLMEnsure` 是「出事只报一次，继续跑」。"
+    },
+    {
+      "title": "三、`ELLMTracker` + `ELLMTagSet` + `ESizeParams`",
+      "start": 110,
+      "end": 160,
+      "new": [
+        "`LLM_TAG_TYPE` —— 标签类型（`uint8`）",
+        "`LLM_MEMORY_OVERHEAD` —— LLM 自身预估开销（600MB）",
+        "`enum class ELLMTracker : uint8` —— 追踪器类型",
+        "`Platform` —— 平台层（追踪内存管理系统）",
+        "`Default` —— 默认层（追踪引擎分配）",
+        "`enum class ELLMTagSet : uint8` —— 可选标签集",
+        "`None` / `Assets` / `AssetClasses` / `UObjectClasses` / `Max` —— 5 个值（条件编译）",
+        "`enum class ESizeParams : uint8` —— 尺寸参数",
+        "`Default` / `ReportCurrent` / `ReportPeak` / `RelativeToSnapshot` —— 4 个值",
+        "`ENUM_CLASS_FLAGS(ESizeParams)` —— 生成位运算"
+      ],
+      "rows": [
+        ["第 110~115 行", "`LLM_TAG_TYPE` / `LLM_MEMORY_OVERHEAD`"],
+        ["第 120~126 行", "`ELLMTracker`"],
+        ["第 131~142 行", "`ELLMTagSet`"],
+        ["第 147~160 行", "`ESizeParams`"]
+      ],
+      "analogy": "像两本账本：一本记「分配器自己花的钱」（Platform），一本记「业务花的钱」（Default）。"
+    },
+    {
+      "title": "四、`LLM_ENUM_GENERIC_TAGS` —— 100+ 个标签",
+      "start": 163,
+      "end": 280,
+      "new": [
+        "`LLM_ENUM_GENERIC_TAGS(macro)` —— X-Macro，每个标签一行",
+        "`macro(名字, 显示名, StatName, SummaryStatName, 父标签)` —— 5 个参数",
+        "`Untagged` / `Paused` / `Total` / `Untracked` —— 4 个基础标签",
+        "`PlatformTotal` / `TrackedTotal` / `UntaggedTotal` / `WorkingSetSize` / `PagefileUsed` —— 5 个平台标签",
+        "`FMalloc` / `FMallocUnused` / `RHIUnused` / `ThreadStack` —— 4 个分配器标签",
+        "`Audio` + 12 个 Audio 子标签 —— 音频",
+        "`Networking` / `Meshes` / `Stats` / `Shaders` / `PSO` —— 5 个引擎标签",
+        "`Textures` + 3 个子标签 —— 纹理",
+        "`UObject` / `Animation` / `StaticMesh` / `Materials` / `Particles` / `Niagara` —— 6 个游戏标签",
+        "`Physics` + 5 个 PhysX 子标签 + 15 个 Chaos 子标签 —— 物理",
+        "`EnginePreInitMemory` / `EngineInitMemory` / `RenderingThreadMemory` —— 3 个启动标签",
+        "`MediaStreaming` + 2 个子标签 —— 媒体",
+        "`CustomName` —— 自定义名标签",
+        "**为什么用 X-Macro** —— 同一份列表展开成枚举值 / 名字表 / 父标签表，保证同步"
+      ],
+      "rows": [
+        ["第 163~177 行", "基础 + 平台标签（14 个）"],
+        ["第 178~189 行", "分配器标签（12 个）"],
+        ["第 190~208 行", "引擎 + 音频标签（19 个）"],
+        ["第 209~221 行", "引擎子系统标签（13 个）"],
+        ["第 222~235 行", "游戏对象标签（14 个）"],
+        ["第 236~256 行", "物理标签（21 个）"],
+        ["第 257~280 行", "启动 + 媒体 + 自定义（24 个）"]
+      ],
+      "analogy": "像一本分类账：每个部门一个科目，科目还能有子科目（Audio → AudioMixer → AudioMixerPlugins）。"
+    },
+    {
+      "title": "五、`ELLMTag` 枚举 + 4 个常量",
+      "start": 282,
+      "end": 311,
+      "new": [
+        "`enum class ELLMTag : LLM_TAG_TYPE` —— 标签枚举",
+        "`#define LLM_ENUM(Enum,Str,Stat,Group,Parent) Enum,` —— 展开成枚举值",
+        "`LLM_ENUM_GENERIC_TAGS(LLM_ENUM)` —— 展开 100+ 个值",
+        "`GenericTagCount` —— 通用标签数量",
+        "`PlatformTagStart = 111` / `PlatformTagEnd = 149` —— 平台标签范围",
+        "`ProjectTagStart = 150` / `ProjectTagEnd = 255` —— 项目标签范围",
+        "`static_assert(...)` —— 断言通用标签不超范围",
+        "`LLM_TAG_COUNT = 256` —— 标签总数",
+        "`LLM_CUSTOM_TAG_START` / `END` / `COUNT` —— 自定义标签范围"
+      ],
+      "rows": [
+        ["第 282~289 行", "枚举声明 + X-Macro 展开"],
+        ["第 291~301 行", "数量 + 平台/项目范围"],
+        ["第 305~306 行", "静态断言"],
+        ["第 308~311 行", "4 个常量"]
+      ],
+      "analogy": "像编号规则：0~110 是内置科目，111~149 留给平台，150~255 留给项目。"
+    },
+    {
+      "title": "六、`ELLMAllocType` + 4 个基础宏",
+      "start": 313,
+      "end": 335,
+      "new": [
+        "`enum class ELLMAllocType` —— 分配类型",
+        "`None = 0` / `FMalloc` / `System` / `RHI` / `Count` —— 5 个值",
+        "`LLM(x)` —— 直接展开 `x`",
+        "`LLM_IF_ENABLED(x)` —— LLM 启用时才执行",
+        "`LLM_IS_ENABLED()` —— LLM 是否启用",
+        "`SCOPE_NAME` —— 用 `__LINE__` 生成唯一变量名"
+      ],
+      "rows": [
+        ["第 313~324 行", "`ELLMAllocType`"],
+        ["第 332~335 行", "4 个基础宏"]
+      ],
+      "analogy": "像给每笔账标来源：GMalloc 的、系统的、RHI 的。"
+    },
+    {
+      "title": "七、作用域宏（LLM_SCOPE 系列）",
+      "start": 341,
+      "end": 388,
+      "new": [
+        "`LLM_SCOPE(Tag)` —— 打一个 LLM 作用域标签（默认追踪器）",
+        "`LLM_SCOPE_DYNAMIC(UniqueName, Tracker, TagSet, Constructor)` —— 动态名字打标签（do/while 强制分号）",
+        "`LLM_TAGSET_SCOPE(Tag, TagSet)` —— 指定标签集",
+        "`LLM_SCOPE_BYNAME(Tag)` —— 用字符串名（静态缓存 `FName`）",
+        "`LLM_SCOPE_BYTAG(TagDeclName)` —— 用标签声明",
+        "`LLM_SCOPE_RENDER_RESOURCE(Tag)` —— 渲染资源专用（前缀 `RenderResources.`）",
+        "`LLM_PLATFORM_SCOPE(Tag)` —— 平台追踪器",
+        "`LLM_PLATFORM_SCOPE_BYNAME` / `BYTAG` —— 平台追踪器 + 名字/声明",
+        "`LLM_SCOPE_CLEAR()` —— 清除当前标签",
+        "`LLM_TAGSET_SCOPE_CLEAR(TagSet)` —— 清除指定标签集",
+        "`UE_MEMSCOPE(Tag)` —— 同时打内存作用域"
+      ],
+      "rows": [
+        ["第 341~345 行", "`LLM_SCOPE`"],
+        ["第 346~371 行", "`LLM_SCOPE_DYNAMIC`（do/while）"],
+        ["第 373~378 行", "`TAGSET_SCOPE` / `BYNAME` / `BYTAG`"],
+        ["第 379~381 行", "`SCOPE_RENDER_RESOURCE`"],
+        ["第 382~385 行", "3 个 `PLATFORM_SCOPE`"],
+        ["第 386~388 行", "2 个 `CLEAR`"]
+      ],
+      "analogy": "像给每段代码贴标签：这段在加载纹理、那段在编译 Shader。"
+    },
+    {
+      "title": "八、暂停宏 + realloc 宏 + 转储宏",
+      "start": 390,
+      "end": 408,
+      "new": [
+        "`LLM_SCOPED_PAUSE_TRACKING(AllocType)` —— 暂停追踪指定分配类型",
+        "`LLM_SCOPED_PAUSE_TRACKING_FOR_TRACKER(Tracker, AllocType)` —— 暂停指定追踪器",
+        "`LLM_SCOPED_PAUSE_TRACKING_WITH_ENUM_AND_AMOUNT(Tag, Amount, Tracker, AllocType)` —— 暂停并记录数量",
+        "`LLM_SCOPED_PAUSE_TRACKING_WITH_ENUM_AND_AMOUNT_BYTAG(...)` —— 同上，用标签声明",
+        "`LLM_REALLOC_SCOPE(Ptr)` —— realloc 时继承原指针标签",
+        "`LLM_REALLOC_PLATFORM_SCOPE(Ptr)` —— 平台追踪器版",
+        "`LLM_DUMP_TAG()` —— 把当前标签打到日志（调试用）",
+        "`LLM_DUMP_PLATFORM_TAG()` —— 平台追踪器版"
+      ],
+      "rows": [
+        ["第 390~396 行", "4 个暂停宏"],
+        ["第 398~402 行", "2 个 realloc 宏"],
+        ["第 404~408 行", "2 个转储宏"]
+      ],
+      "analogy": "像暂停录音：这段别记（比如 LLM 自己分配内存时）。"
+    },
+    {
+      "title": "九、标签定义宏（DEFINE / DECLARE / BOOTSTRAP）",
+      "start": 410,
+      "end": 468,
+      "new": [
+        "`LLM_DEFINE_TAG(UniqueNameWithUnderscores, ...)` —— 定义一个标签（全局实例）",
+        "`LLM_DEFINE_STATIC_TAG(...)` —— 定义静态标签",
+        "`LLM_DECLARE_TAG(UniqueNameWithUnderscores)` —— 声明已定义的标签",
+        "`LLM_DECLARE_TAG_API(..., ModuleAPI)` —— 带模块导出标记",
+        "`LLM_TAG_NAME(UniqueNameWithUnderscores)` —— 取标签唯一名",
+        "`LLM_DEFINE_BOOTSTRAP_TAG(...)` —— 定义引导期标签（全局构造期可用）",
+        "`LLM_SCOPE_BY_BOOTSTRAP_TAG(TagDeclName)` —— 用引导期标签打作用域",
+        "`LLM_DECLARE_BOOTSTRAP_TAG(...)` / `_API` —— 声明引导期标签",
+        "**为什么有 BOOTSTRAP 版** —— 全局 C++ 构造函数里、main 之前也能用（用函数静态变量延迟初始化）"
+      ],
+      "rows": [
+        ["第 410~423 行", "`LLM_DEFINE_TAG`"],
+        ["第 425~438 行", "`LLM_DEFINE_STATIC_TAG`"],
+        ["第 440~452 行", "`DECLARE_TAG` / `TAG_NAME`"],
+        ["第 454~468 行", "5 个 BOOTSTRAP 宏"]
+      ],
+      "analogy": "像给新科目开户：DEFINE 是开户，DECLARE 是告诉别人「这个户存在」，BOOTSTRAP 是「开业前就能用的临时户」。"
+    },
+    {
+      "title": "十、`UE::LLMPrivate` 命名空间（FLLMAllocator 等）",
+      "start": 470,
+      "end": 587,
+      "new": [
+        "`LLMAllocFunction` / `LLMFreeFunction` —— 分配/释放函数指针类型",
+        "8 个前置声明 —— `FLLMCsvProfilerWriter` / `FLLMCsvWriter` / `FLLMThreadState` / `FLLMTraceWriter` / `FLLMTracker` / `FTagData` / `FTagDataArray` / `FTagDataNameMap`",
+        "`class FLLMAllocator` —— LLM 内部内存分配器（直接从 OS 拿内存）",
+        "`Initialise(Alloc, Free, PageSize)` —— 初始化",
+        "`Alloc` / `Malloc` / `Free` / `Realloc` / `GetTotal` —— 5 个内存操作",
+        "`template <typename T, typename... ArgsType> T* New(ArgsType&&... Args)` —— 分配并构造",
+        "`template <typename T> void Delete(T* Ptr)` —— 析构并释放",
+        "`FCriticalSection CriticalSection` —— 保护分配器的锁",
+        "`AllocatorPrivate::FBin* Bins` —— 桶数组",
+        "`enum class ETagReferenceSource` —— 标签引用来源（6 个值）",
+        "`FLLMInitialisedCallback` / `FTagCreationCallback` —— 2 个回调类型",
+        "`struct FPrivateCallbacks` —— 初始化期间的回调（私有）"
+      ],
+      "rows": [
+        ["第 470~475 行", "2 个函数指针类型 + 2 个前置声明"],
+        ["第 477~493 行", "命名空间 + 8 个前置声明"],
+        ["第 498~512 行", "`FLLMAllocator` 声明 + 7 个方法"],
+        ["第 514~530 行", "`New` / `Delete` 模板"],
+        ["第 532~556 行", "访问器 + 私有成员"],
+        ["第 558~566 行", "`ETagReferenceSource`"],
+        ["第 568~585 行", "2 个回调类型 + `FPrivateCallbacks`"]
+      ],
+      "analogy": "像 LLM 自己的小金库：不通过 GMalloc，直接从 OS 拿内存，避免「追踪自己」的死循环。"
+    },
+    {
+      "title": "十一、`FLLMCustomTag`（废弃）+ `FLLMTagInfo`",
+      "start": 589,
+      "end": 604,
+      "new": [
+        "`struct FLLMCustomTag` —— **已废弃（4.27）**，改用 `FLLMTagInfo`",
+        "`int32 Tag` / `const TCHAR* Name` / `FName StatName` / `FName SummaryStatName` —— 4 个字段",
+        "`struct FLLMTagInfo` —— 注册项目标签时用的字段集合",
+        "`Name` / `StatName` / `SummaryStatName` / `ParentTag = -1` —— 4 个字段"
+      ],
+      "rows": [
+        ["第 589~595 行", "`FLLMCustomTag`（废弃）"],
+        ["第 597~604 行", "`FLLMTagInfo`"]
+      ],
+      "analogy": "像老式表格：还能用，但已经贴了「请换新表」的标签。"
+    },
+    {
+      "title": "十二、`FLowLevelMemTracker` 单例 + 核心 API",
+      "start": 606,
+      "end": 700,
+      "new": [
+        "`class FLowLevelMemTracker` —— LLM 主追踪器",
+        "`static Get()` —— 取单例（懒构造）",
+        "`static Construct()` —— 构造单例",
+        "`static IsEnabled()` —— LLM 是否启用（启动早期也返回 true）",
+        "`ProcessCommandLine(CmdLine)` —— 处理命令行（可能禁用 LLM）",
+        "`GetTotalTrackedMemory(Tracker)` —— 取总追踪内存",
+        "`OnLowLevelAlloc(Tracker, Ptr, Size, DefaultTag, AllocType, bTrackInMemPro)` —— 记录分配（2 个重载）",
+        "`OnLowLevelFree(Tracker, Ptr, AllocType, bTrackInMemPro)` —— 记录释放",
+        "`OnLowLevelChangeInMemoryUse(Tracker, DeltaMemory, DefaultTag, AllocType)` —— 记录内存增减（2 个重载）",
+        "`OnLowLevelAllocMoved(Tracker, Dest, Source, AllocType)` —— 记录分配被移动",
+        "`UpdateStatsPerFrame(LogName)` —— 每帧更新统计并发布",
+        "`Tick()` —— 更新统计",
+        "`SetProgramSize(InProgramSize)` —— 设置程序本身大小",
+        "`Exec(Cmd, Ar)` —— 控制台命令处理",
+        "`IsTagSetActive(Set)` —— 标签集是否激活",
+        "`ShouldReduceThreads()` —— 是否应减少线程",
+        "`GetActiveTagData(Tracker, TagSet)` —— 取当前激活标签"
+      ],
+      "rows": [
+        ["第 606~620 行", "类声明 + `Get` / `Construct`"],
+        ["第 622~635 行", "`IsEnabled` / `ProcessCommandLine` / `GetTotalTrackedMemory`"],
+        ["第 637~651 行", "`OnLowLevelAlloc` ×2"],
+        ["第 653~663 行", "`OnLowLevelFree`"],
+        ["第 665~675 行", "`OnLowLevelChangeInMemoryUse` ×2"],
+        ["第 677~690 行", "`OnLowLevelAllocMoved` / `UpdateStatsPerFrame` / `Tick` / `SetProgramSize` / `Exec`"],
+        ["第 692~699 行", "`IsTagSetActive` / `ShouldReduceThreads` / `GetActiveTagData`"]
+      ],
+      "analogy": "像总账房：所有分配/释放都要来这里登记，它负责汇总。"
+    },
+    {
+      "title": "十三、`FLowLevelMemTracker` 标签查询 API",
+      "start": 701,
+      "end": 765,
+      "new": [
+        "`RegisterPlatformTag(Tag, Name, StatName, SummaryStatName, ParentTag)` —— 注册平台标签",
+        "`RegisterProjectTag(...)` —— 注册项目标签",
+        "`GetTrackedTags(TagSet)` / `GetTrackedTags(Tracker, TagSet)` —— 取所有被追踪的标签（2 个重载）",
+        "`GetTrackedTagsNamesWithAmount(...)` —— 取标签名 + 数量",
+        "`GetTrackedTagsNamesWithAmountFiltered(...)` —— 带过滤版",
+        "`FindTagByName(Name, OutTag, InTagSet)` —— 按显示名查标签",
+        "`FindTagName(Tag)` —— **已废弃（4.27）**",
+        "`FindTagDisplayName(Tag)` / `FindPtrDisplayName(Ptr)` —— 取显示名",
+        "`GetTagDisplayName(TagData)` —— 取 FTagData 显示名",
+        "`GetTagDisplayPathName(TagData)` —— 取完整路径名（2 个重载）",
+        "`GetTagUniqueName(TagData)` —— 取唯一名",
+        "`GetTagParent(TagData)` —— 取父标签",
+        "`GetTagIsEnumTag(TagData)` —— 是否枚举标签",
+        "`GetTagClosestEnumTag(TagData)` —— 取最近的枚举标签祖先",
+        "`GetTagAmountForTracker(...)` —— 取标签内存量（3 个重载）",
+        "`SetTagAmountForTracker(...)` —— 设置标签内存量（2 个重载）",
+        "`DumpTag(Tracker, FileName, LineNumber)` —— 转储当前标签",
+        "`PublishDataSingleFrame()` —— 发布单帧数据"
+      ],
+      "rows": [
+        ["第 701~703 行", "2 个注册方法"],
+        ["第 705~712 行", "4 个查询方法"],
+        ["第 714~725 行", "5 个名字查询"],
+        ["第 727~736 行", "4 个路径/父标签"],
+        ["第 738~745 行", "2 个枚举标签判断"],
+        ["第 747~759 行", "5 个数量查询/设置"],
+        ["第 761~765 行", "`DumpTag` / `PublishDataSingleFrame`"]
+      ],
+      "analogy": "像查账窗口：能查某个科目的余额、能查科目全名、能查父子关系。"
+    },
+    {
+      "title": "十四、`FLowLevelMemTracker` 转储 + 初始化",
+      "start": 767,
+      "end": 801,
+      "new": [
+        "`enum class EDumpFormat` —— 转储格式（`PlainText` / `CSV`）",
+        "`DumpToLog(DumpFormat, OutputDevice, SizeParams, TagSet)` —— 转储到日志",
+        "`OnPreFork()` —— fork 前回调",
+        "`IsInitialized()` —— 是否已初始化",
+        "`IsConfigured()` —— 是否已配置完成",
+        "`BootstrapInitialise()` —— 引导期初始化（**不提供 `GetTagUniqueName`**）",
+        "`FinishInitialise()` —— 完成初始化（所有函数可用）"
+      ],
+      "rows": [
+        ["第 767~772 行", "`EDumpFormat` + `DumpToLog`"],
+        ["第 774 行", "`OnPreFork`"],
+        ["第 776~784 行", "`IsInitialized` / `IsConfigured`"],
+        ["第 786~793 行", "`BootstrapInitialise`"],
+        ["第 795~801 行", "`FinishInitialise`"]
+      ],
+      "analogy": "像分两阶段开业：先开个临时窗口（Bootstrap），等 FName 系统就绪再正式开业（Finish）。"
+    },
+    {
+      "title": "十五、`FLowLevelMemTracker` 私有实现",
+      "start": 803,
+      "end": 914,
+      "new": [
+        "`enum class EEnabled` —— 启用状态（`NotYetKnown` / `Disabled` / `Enabled`）",
+        "`struct FEnableStateScopeLock` —— 启用状态作用域锁",
+        "`IsBootstrapping()` —— 是否处于引导期",
+        "`Clear()` —— 释放所有内存（永久禁用）",
+        "`GetTracker(Tracker)` —— 取追踪器（2 个重载）",
+        "`TickInternal` / `UpdateTags` / `SortTags` / `PublishDataPerFrame` —— 4 个内部方法",
+        "`RegisterCustomTagInternal(...)` —— 注册自定义标签",
+        "`BootstrapTagDatas()` —— 创建引导期标签数据",
+        "`InitialiseTagDatas_*` —— 3 个初始化方法",
+        "`RegisterTagDeclaration` / `RegisterTagData` —— 2 个注册方法",
+        "`FindOrAddTagData(...)` —— 查找或新建（3 个重载）",
+        "`FindTagData(...)` —— 查找（2 个重载）",
+        "`TryEnterEnabled(ScopeLock)` —— 尝试进入启用状态（必要时加锁）",
+        "10 个 `friend class` —— 友元",
+        "`FLLMAllocator Allocator` —— LLM 内部分配器",
+        "`FTagDataArray* TagDatas` —— 所有 TagData（按索引排序）",
+        "`FTagDataNameMap* TagDataNameMap` —— 名字 → TagData",
+        "`FTagData** TagDataEnumMap` —— 枚举值 → TagData",
+        "`FLLMTracker* Trackers[Max]` —— 追踪器数组",
+        "`FRWLock TagDataLock` / `FCriticalSection UpdateLock` / `BootstrapLock` —— 3 个锁",
+        "`uint64 ProgramSize` / `int64 MemoryUsageCurrentOverhead` / `MemoryUsagePlatformTotalUntracked` —— 3 个量",
+        "`bool ActiveSets[Max]` —— 各标签集是否激活",
+        "13 个 `bool` 状态标志",
+        "`static FLowLevelMemTracker* TrackerInstance` —— 单例指针",
+        "`static EEnabled EnabledState` —— 启用状态",
+        "`static bool bIsDisabled` —— **已废弃（5.5）**"
+      ],
+      "rows": [
+        ["第 803~810 行", "`EEnabled` + `FEnableStateScopeLock`"],
+        ["第 812~821 行", "构造/析构 + `IsBootstrapping` / `Clear`"],
+        ["第 823~831 行", "`GetTracker` + 4 个内部方法 + `RegisterCustomTagInternal`"],
+        ["第 832~845 行", "标签数据初始化 8 个方法"],
+        ["第 847~851 行", "5 个查找方法"],
+        ["第 853~861 行", "`TryEnterEnabled`"],
+        ["第 863~872 行", "10 个友元"],
+        ["第 874~883 行", "分配器 + 3 个标签数据结构 + 追踪器数组"],
+        ["第 885~893 行", "3 个锁 + 3 个量 + `ActiveSets`"],
+        ["第 895~907 行", "13 个状态标志"],
+        ["第 909~914 行", "2 个静态成员 + 废弃成员"]
+      ],
+      "analogy": "像账房的后屋：账本（TagDatas）、索引（NameMap / EnumMap）、锁、各种状态标志。"
+    },
+    {
+      "title": "十六、`FLLMScope` 作用域类",
+      "start": 916,
+      "end": 932,
+      "new": [
+        "`class FLLMScope` —— LLM 内存追踪作用域",
+        "3 个构造函数 —— `FName` / `ELLMTag` / `FTagData*` 版",
+        "`~FLLMScope()` —— 析构时恢复父标签",
+        "`Destruct()` —— 析构实现",
+        "`ELLMTracker Tracker` —— 追踪器",
+        "`bool bEnabled = false` —— 是否启用（**用 `uint8` 而非位域，减少 ALU 操作**）",
+        "`ELLMTagSet TagSet` —— 标签集"
+      ],
+      "rows": [
+        ["第 916~923 行", "类声明 + 3 个构造 + 析构"],
+        ["第 925~926 行", "`Destruct`"],
+        ["第 928~931 行", "3 个成员"]
+      ],
+      "analogy": "像进房间开灯、出门关灯：构造时打标签，析构时恢复。"
+    },
+    {
+      "title": "十七、`ILLMDynamicTagConstructor` + `FLLMDynamicTagConstructorStatString`",
+      "start": 934,
+      "end": 959,
+      "new": [
+        "`class ILLMDynamicTagConstructor` —— 动态标签构造器接口",
+        "`virtual ~ILLMDynamicTagConstructor() = default` —— 虚析构",
+        "`GetStatName()` —— 取统计名（默认空）",
+        "`NeedsStatConstruction()` —— 是否需要构造统计（默认 true）",
+        "`class FLLMDynamicTagConstructorStatString : public ILLMDynamicTagConstructor` —— 提供字符串版",
+        "`FLLMDynamicTagConstructorStatString(FString InStatName)` —— 构造",
+        "`GetStatName()` —— 返回保存的统计名",
+        "`FString StatName` —— 统计名"
+      ],
+      "rows": [
+        ["第 934~950 行", "`ILLMDynamicTagConstructor`"],
+        ["第 952~959 行", "`FLLMDynamicTagConstructorStatString`"]
+      ],
+      "analogy": "像给新科目起名的规则：告诉系统「这个动态标签该叫什么统计名」。"
+    },
+    {
+      "title": "十八、`FLLMScopeDynamic` 动态作用域",
+      "start": 961,
+      "end": 999,
+      "new": [
+        "`class FLLMScopeDynamic` —— 动态创建标签的作用域",
+        "构造函数：LLM 启用时才 `Init`",
+        "`IsEnabled()` —— 是否启用",
+        "`TryFindTag(UniqueName)` —— 尝试查找标签",
+        "`TryAddTagAndActivate(UniqueName, Constructor)` —— 新建标签并激活",
+        "`Activate()` —— 激活",
+        "`~FLLMScopeDynamic()` —— 启用时才 `Destruct`",
+        "`Init` / `Destruct` —— 实现在 .cpp",
+        "`const FTagData* TagData` —— 标签数据",
+        "`ELLMTracker Tracker` / `bool bEnabled` / `ELLMTagSet TagSet` —— 3 个成员"
+      ],
+      "rows": [
+        ["第 961~976 行", "类声明 + 构造"],
+        ["第 977~980 行", "4 个方法"],
+        ["第 982~988 行", "析构"],
+        ["第 990~998 行", "`Init` / `Destruct` + 4 个成员"]
+      ],
+      "analogy": "像按需开户：第一次用到才创建科目，之后复用。"
+    },
+    {
+      "title": "十九、`FLLMPauseScope` + `FLLMClearScope` + `FLLMScopeFromPtr`",
+      "start": 1001,
+      "end": 1038,
+      "new": [
+        "`class FLLMPauseScope` —— 暂停 LLM 的作用域（禁用分配钩子）",
+        "2 个构造函数 —— `FName` / `ELLMTag` 版",
+        "`Init(...)` —— 初始化实现",
+        "`ELLMTracker PausedTracker` / `ELLMAllocType AllocType` / `bool bEnabled` —— 3 个成员",
+        "`class FLLMClearScope : public FLLMScope` —— 清除顶层标签的作用域",
+        "`class FLLMScopeFromPtr` —— 从指针继承标签的作用域",
+        "`FLLMScopeFromPtr(void* Ptr, ELLMTracker Tracker)` —— 构造",
+        "`bool bEnabled[Max]` —— 各标签集是否启用",
+        "`DisableAll()` —— 内存清零禁用所有"
+      ],
+      "rows": [
+        ["第 1001~1014 行", "`FLLMPauseScope`"],
+        ["第 1016~1021 行", "`FLLMClearScope`"],
+        ["第 1023~1038 行", "`FLLMScopeFromPtr`"]
+      ],
+      "analogy": "暂停像「这段别记账」，清除像「这段算公共开销」，继承像「跟着原指针走」。"
+    },
+    {
+      "title": "二十、`FLLMTagDeclaration` + `FLLMTagSetAllocationFilter`",
+      "start": 1040,
+      "end": 1079,
+      "new": [
+        "`class FLLMTagDeclaration` —— 全局实例，向 LLM 提供标签信息",
+        "`FLLMTagDeclaration(InCPPName, InDisplayName, InParentTagName, InStatName, InSummaryStatName, TagSet)` —— 构造",
+        "`GetUniqueName()` —— 取唯一名",
+        "`FCreationCallback` —— 创建回调类型",
+        "`AddCreationCallback` / `ClearCreationCallbacks` / `GetCreationCallbacks` —— 3 个回调管理",
+        "`GetList()` —— 取标签声明链表",
+        "`Register()` —— 注册",
+        "`ConstructUniqueName()` —— 构造唯一名",
+        "`CPPName` / `UniqueName` / `DisplayName` / `ParentTagName` / `StatName` / `SummaryStatName` / `TagSet` / `Next` —— 8 个成员",
+        "`struct FLLMTagSetAllocationFilter` —— 标签分配过滤器",
+        "`FName Name` / `ELLMTagSet TagSet` —— 2 个字段"
+      ],
+      "rows": [
+        ["第 1040~1045 行", "类声明 + 构造 + `GetUniqueName`"],
+        ["第 1047~1055 行", "回调管理 + `Register`"],
+        ["第 1057~1070 行", "`ConstructUniqueName` + 8 个成员"],
+        ["第 1072~1079 行", "`FLLMTagSetAllocationFilter`"]
+      ],
+      "analogy": "像科目登记表：每个科目一张表，登记后挂到链表上。"
+    },
+    {
+      "title": "二十一、`IsEnabled` 内联实现 + `#else` 空宏分支",
+      "start": 1081,
+      "end": 1127,
+      "new": [
+        "`inline bool FLowLevelMemTracker::IsEnabled()` —— 内联实现",
+        "`return EnabledState != EEnabled::Disabled` —— 只要不是 Disabled 就算启用",
+        "`#else` —— 未启用 LLM 时",
+        "`LLM_ALLOW_ASSETS_TAGS` / `LLM_ALLOW_UOBJECTCLASSES_TAGS` —— 默认 0",
+        "30+ 个空宏 —— `LLM` / `LLM_IF_ENABLED` / `LLM_SCOPE` / `LLM_DEFINE_TAG` 等全变空",
+        "`LLM_IS_ENABLED()` —— 永远 `false`"
+      ],
+      "rows": [
+        ["第 1081~1084 行", "`IsEnabled` 内联实现"],
+        ["第 1086~1094 行", "`#else` + 2 个默认宏"],
+        ["第 1096~1125 行", "30+ 个空宏"],
+        ["第 1127 行", "`#endif`"]
+      ],
+      "analogy": "像正式演出时把排练道具全收起来：不占地方、不影响性能。"
+    }
+  ],
+  "syntax": [
+    ["`#define X(macro) \\`", "X-Macro（列表展开）", "`#define LLM_ENUM_GENERIC_TAGS(macro) \\`"],
+    ["`#define X(a,b) a,`", "X-Macro 展开成枚举值", "`#define LLM_ENUM(Enum,Str,Stat,Group,Parent) Enum,`"],
+    ["`PREPROCESSOR_JOIN(A, B)`", "宏拼接（生成唯一标识符）", "`PREPROCESSOR_JOIN(LLMTagDeclaration_, UniqueName)`"],
+    ["`TEXT(#X)`", "字符串化运算符", "`TEXT(#UniqueNameWithUnderscores)`"],
+    ["`do { ... } while (false)`", "强制要求分号", "`do { ... } while (false) /* require semicolon */`"],
+    ["`static_assert(cond, msg)`", "编译期断言", "`static_assert(ELLMTag::GenericTagCount <= ELLMTag::PlatformTagStart, \"...\")`"],
+    ["`enum class X : uint8`", "强类型枚举", "`enum class ELLMTracker : uint8`"],
+    ["`ENUM_CLASS_FLAGS(X)`", "生成位运算", "`ENUM_CLASS_FLAGS(ESizeParams);`"],
+    ["`template <typename T, typename... Args> T* New(Args&&...)`", "可变参数模板", "`T* New(ArgsType&&... Args)`"],
+    ["`new (Ptr) T(...)`", "placement new", "`new (Ptr) T(Forward<ArgsType>(Args)...);`"],
+    ["`Ptr->~T()`", "显式调析构", "`Ptr->~T();`"],
+    ["`UE_DEPRECATED(v, \"msg\")`", "标记废弃", "`UE_DEPRECATED(5.5, \"Use IsEnabled instead.\")`"],
+    ["`friend class X;`", "友元类", "`friend class FLLMScope;`"],
+    ["`std::atomic<bool>`", "原子布尔", "`std::atomic<bool> bConfigurationComplete;`"]
+  ],
+  "diff": [
+    ["代码行", "1127 行", "1581 行", "多出的是每行上方的中文注释"],
+    ["非注释代码行", "725 行", "725 行", "**逐字一致**"],
+    ["注释语言", "英文", "中文", "全部译成中文"],
+    ["块注释", "28 个 `/** */` 多行块", "27 个单行 `//` 中文注释", "整块压成一行，保证代码行零差异"],
+    ["`TEXT(\"...\")` 字符串", "英文原文", "保留英文", "运行时字符串，不翻译"],
+    ["`UE_DEPRECATED` 字符串", "英文原文", "保留英文", "API 契约，不翻译"]
+  ],
+  "todo": [
+    "还原文件已生成：`ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\LowLevelMemTracker.h`（1581 行）",
+    "脚本验收：`codeOurs=725 / codeEngine=725 / diff=0`",
+    "确认后下一个：`HAL\\LowLevelMemTrackerDefines.h`（1042 字节）"
+  ],
+  "src": [
+    "引擎：`D:\\ue5\\Epic Games\\UE_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\LowLevelMemTracker.h`（1127 行）",
+    "还原：`E:\\ue5\\game_design\\code\\ue5Learing\\ue_5.6\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\LowLevelMemTracker.h`（1581 行）",
+    "总 md：`AI_Learning_Notes\\从零复刻ue5\\Engine\\Source\\Runtime\\Core\\Public\\HAL\\19_LowLevelMemTracker.h_总md.md`"
+  ]
+}
