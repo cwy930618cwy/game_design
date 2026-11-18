@@ -1,0 +1,26 @@
+﻿#include  "MyFirstActor.h"
+
+#include "Components/StaticMeshComponent.h"
+
+#include "UObject//ConstructorHelpers.h"
+
+AMyFirstActor::AMyFirstActor()
+{
+	PrimaryActorTick.bCanEverTick = false;
+
+	MyMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MyMeshComponent");
+
+	RootComponent = MyMeshComponent;
+}
+
+void AMyFirstActor::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UE_LOG(LogTemp, Warning, TEXT("AMyFirstActor::BeginPlay"));
+}
+
+void AMyFirstActor::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+}
