@@ -45,12 +45,12 @@ Core/
 
 | 顶层项 | 实查规模 / 关键内容 | 状态 |
 |---|---|---|
-| `Public/` | 1196 文件（1154 `.h` / 21 `.inl` / 13 `.tps` / 8 `.isph`），**46 个子目录 + 7 个散头** | 🟡 进行中（本层总 md 已建：`00_Public_总md.md`） |
+| `Public/` | 1196 文件（1154 `.h` / 21 `.inl` / 13 `.tps` / 8 `.isph`），约 45 个子目录 + 7 个散头 | ⬜ 待教 |
 | `Private/` | 642 文件（558 `.cpp` / 68 `.h` / 12 `.tps`），子目录与 `Public/` 大致对应 | ⬜ 待教 |
 | `Internal/` | 29 文件；`IO\` 20、`CoreGlobalsInternal.h` 等 | ⬜ 待教 |
 | `Tests/` | 124 文件（121 `.cpp` / 3 `.h`）；`Containers\` 20、`Misc\` 32、`Async\` 10、`String\` 10、`Math\` 9、`TestGroupEvents.cpp` | ⬜ 待教 |
-| `Core.Build.cs` | C#，**实读 330 行**；模块依赖 / 宏定义 / 平台分支 | 🟡 总 md + 完整代码 md 已建（`01_Core.Build.cs_总md.md`、`01_Core.Build.cs_完整代码.md`），待用户抄写 |
-| `Core_APL.xml` | Android 平台附加，**实读 73 行** | ⏳ 待教（下一课） |
+| `Core.Build.cs` | C#，≥299 行；模块依赖 / 宏定义 / 平台分支 | ⬜ 待教 |
+| `Core_APL.xml` | Android 平台附加 | ⬜ 待教 |
 | 本文件 | 本层总 md | ✅ 已建 |
 
 ### `Public/` 子目录按用途分组（实查，全部要教）
@@ -122,9 +122,9 @@ flowchart TD
 1. **本轮只建这一份总 md**，停下等你说「懂了 / 下一步」。
 2. **`Public` / `Private` / `Internal` / `Tests` / 2 个散文件全都要教、要还原**，一个不删、不跳。
 3. **⏳ 下一步，等你定一个**：
-   - ✅ **已按你 2026-11-16 指令进 `Public\`**：本层总 md 已建 `00_Public_总md.md`（1196 文件全景 + 46 子目录 + 7 散头实查行数 + 扩展名分布）。
-   - ✅ **2026-11-16 按你指令先教两个顶层文件**：`01_Core.Build.cs_总md.md` + `01_Core.Build.cs_完整代码.md` 已建（330 行全景 + 完整代码 + 逐段拆解）。**⏳ 下一步 = 你抄完 `Core.Build.cs` 后我验收 → 再教 `Core_APL.xml`（73 行）**。
-   - 之后回 `Public\` 选一个：7 个散头（`CoreTypes.h` 15 行 → `CoreFwd.h` 44 → `CoreMinimal.h` 183 → `Core.h` 319 → `CoreSharedPCH.h` 263 → `CoreGlobals.h` 854 → `PixelFormat.h` 527）；或 `Containers\` / `Math\` / `HAL\` / `Misc\`。
+   - 建议先 `Public\` 的总 md（45 个子目录 + 7 个散头，最常用、最能看懂 `Core` 提供什么）；
+   - 或先 `Core.Build.cs` 的完整内容（一份文件、和刚学完的 `Target.cs` 连成一条线，最容易先吃透）；
+   - 或 `Private` / `Internal` / `Tests`。
    > 我不擅自开，你说一个我就建那一层的总 md / 完整代码讲义。
 4. 每教一步同步更新 `00_Runtime_总md.md`、`00_Source_总md.md`、`00_Engine_总md.md` 与根总纲的进度列。
 5. **下次「下一步」先验收还原文件**：还原落点 `ue_5.6\Engine\Source\Runtime\Core\`；展开到哪个子目录/文件，就验收那一个，全对才推进、有错不推进。
