@@ -50,7 +50,7 @@ LyraGameModule.cpp（20 行）
 | `IModuleInterface::ShutdownModule` | 模块卸载时回调 | `ModuleInterface.h:55-57` |
 | `IMPLEMENT_PRIMARY_GAME_MODULE` | 注册主游戏模块 | `ModuleManager.h:973` / `1007` |
 
-> 源码依据补充：`E:\ue5\game_design\code\LyraStarterGame` 是实查到的 Lyra 5.4 源根（文档写的 `E:\ue5\LyraStarterGame` 不存在）。
+> 源码依据：权威源根 = `E:\ue5\LyraStarterGame`（Lyra 5.4，已实查存在）。
 
 ---
 

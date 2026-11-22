@@ -68,4 +68,4 @@ LyraEditor.Target.cs
 
 ---
 
-**下一步**：第 4 轮 `Source\LyraGame\LyraGame.Build.cs`（精简版，S06 收敛成 Lyra 完整版）。
+**下一步**：第 4 轮 `Source\LyraGame\LyraGame.Build.cs`（**5.4 权威源 91 行 / 79 代码行，照抄，不是精简版**）。

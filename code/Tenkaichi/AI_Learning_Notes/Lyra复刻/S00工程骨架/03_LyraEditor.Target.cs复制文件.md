@@ -8,7 +8,6 @@
 
 ```csharp
 // 版权声明：Epic Games 保留所有权利
-// Copyright Epic Games, Inc. All Rights Reserved.
 
 // 引入 UnrealBuildTool 命名空间；TargetRules / TargetInfo / TargetType 都在这里
 using UnrealBuildTool;

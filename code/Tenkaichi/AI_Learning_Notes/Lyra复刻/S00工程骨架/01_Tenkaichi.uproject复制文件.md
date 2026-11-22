@@ -465,7 +465,9 @@
 
 ## 源码依据
 
-- `E:\ue5\LyraStarterGame\LyraStarterGame.uproject:1-347`（全文）
-- `E:\ue5\LyraStarterGame\LyraStarterGame.uproject:6-21`（`Modules` 段，含 `LyraEditor`）
-- `E:\ue5\LyraStarterGame\LyraStarterGame.uproject:22-345`（`Plugins` 段，76 项）
+- `E:\ue5\LyraStarterGame\LyraStarterGame.uproject:1-347`（全文，源文件 347 行；本讲义代码块 471 行只因加了逐行中文注释）
+- `E:\ue5\LyraStarterGame\LyraStarterGame.uproject:6-21`（`Modules` 段，源含 `LyraGame` + `LyraEditor` 两项）
+- `E:\ue5\LyraStarterGame\LyraStarterGame.uproject:22-345`（`Plugins` 段，**源共 76 项**）
 - `E:\ue5\LyraStarterGame\LyraStarterGame.uproject:346`（`EpicSampleNameHash`）
+
+> ⚠️ **数字对账（2026-11-23 修订）**：源 `.uproject` 有 **76 项插件 + 2 个 Module**；本讲义代码块只列 **61 项插件 + 1 个 Module（`LyraGame`）**，这是总 md 里写明的 S00 渐进偏差（项目插件 S01~S05 补 10 个、示例玩法 S23 补 5 个；`LyraEditor` 到 S22 补回），不是漏抄。原"源码依据"里写"76 项"却只列 61 项，矛盾已在此说明。

@@ -90,13 +90,14 @@ LyraGame.Target.cs
 
 ## 四、怎么教（推进节奏）
 
-本轮三件套：
+本轮两件套：
 
 | # | 产物 | 路径 |
 |---|---|---|
 | ① | 总 md（本文件） | `S00工程骨架\02_LyraGame.Target.cs_总md.md` |
 | ② | 复制文件（代码 + 每行上方中文注释） | `S00工程骨架\02_LyraGame.Target.cs复制文件.md` |
-| ③ | 还原文件 | `Source\LyraGame.Target.cs` |
+
+> 你照抄到 `Source\LyraGame.Target.cs`（代码由你写，AI 不代写）。
 
 ---
 
