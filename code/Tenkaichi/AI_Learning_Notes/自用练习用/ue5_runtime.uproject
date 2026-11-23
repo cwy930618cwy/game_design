@@ -1,0 +1,61 @@
+// 整个 .uproject 是一个 JSON 对象，从这里开始
+{
+  // .uproject 格式版本号；UE5 固定写 3，写错引擎不认
+  "FileVersion": 3,
+  // 绑定本机注册的 UE 5.4；双击工程时引擎按这个版本启动
+  "EngineAssociation": "5.4",
+  // 启动器里的分类标签，纯展示用，不影响编译
+  "Category": "Samples",
+  // 工程描述，纯展示用，留空即可
+  "Description": "",
+  // 代码模块数组；每一项对应 Source\ 下的一个目录
+  "Modules": [
+    // 1核心地基
+    {
+      // 最底层工具箱：容器、字符串、数学、委托、日志、平台抽象
+      "Name": "Core",
+    },
+    {
+      // UObject 反射与垃圾回收：UCLASS / UPROPERTY 的底层支撑
+      "Name": "CoreUbject"
+    },
+    {
+      // 游戏运行时主体：AActor / APawn / UWorld / 组件系统
+      "Name": "Engine"
+    },
+    {
+      // 应用外壳：命令行参数、应用生命周期
+      "Name": "ApplicationCore"
+    },
+    {
+      // 程序入口：GuardedMain 与引擎主循环
+      "Name": "Launch"
+    }
+  ],
+  "EpicSampleNameHash": "4517316834"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

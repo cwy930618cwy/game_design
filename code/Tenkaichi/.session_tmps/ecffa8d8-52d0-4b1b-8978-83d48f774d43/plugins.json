@@ -1,0 +1,2123 @@
+[
+ {
+  "idx": 1,
+  "name": "ActorPalette",
+  "en": true,
+  "src": "Engine",
+  "cat": "Experimental",
+  "desc": "Allows creation of Actor Palettes based on existing levels to quickly select actors and drag them into the level editor",
+  "mods": [
+   {
+    "name": "ActorPalette",
+    "type": "Editor",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Experimental\\ActorPalette\\ActorPalette.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 2,
+  "name": "AESGCMHandlerComponent",
+  "en": true,
+  "src": "Engine",
+  "cat": "Misc",
+  "desc": "Provides a packet handler component to do AES GCM encryption and decryption.",
+  "mods": [
+   {
+    "name": "AESGCMHandlerComponent",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\PacketHandlers\\AESGCMHandlerComponent\\AESGCMHandlerComponent.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 3,
+  "name": "DTLSHandlerComponent",
+  "en": true,
+  "src": "Engine",
+  "cat": "Misc",
+  "desc": "Provides a packet handler component to do DTLS encryption and decryption.",
+  "mods": [
+   {
+    "name": "DTLSHandlerComponent",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\PacketHandlers\\DTLSHandlerComponent\\DTLSHandlerComponent.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 4,
+  "name": "GameplayAbilities",
+  "en": true,
+  "src": "Engine",
+  "cat": "Gameplay",
+  "desc": "Adds GameplayEffect and GameplayAbility classes to handle complicated gameplay interactions.",
+  "mods": [
+   {
+    "name": "GameplayAbilities",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "GameplayAbilitiesEditor",
+    "type": "UncookedOnly",
+    "phase": "PreDefault"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\GameplayAbilities\\GameplayAbilities.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\ShooterCore.uplugin",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\Source\\ShooterCoreRuntime\\ShooterCoreRuntime.Build.cs",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\TopDownArena\\TopDownArena.uplugin",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\TopDownArena\\Source\\TopDownArenaRuntime\\TopDownArenaRuntime.Build.cs",
+    1
+   ],
+   [
+    "Source\\LyraEditor\\LyraEditor.Build.cs",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 5,
+  "name": "Gauntlet",
+  "en": true,
+  "src": "Engine",
+  "cat": "Testing",
+  "desc": "Provides a helper class for creating and managing tests in your game",
+  "mods": [
+   {
+    "name": "Gauntlet",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Experimental\\Gauntlet\\Gauntlet.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 6,
+  "name": "D3DExternalGPUStatistics",
+  "en": true,
+  "src": "MISSING",
+  "cat": "",
+  "desc": "",
+  "mods": [],
+  "ebd": "",
+  "path": "",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 7,
+  "name": "CommonConversation",
+  "en": true,
+  "src": "Engine",
+  "cat": "Gameplay",
+  "desc": "An *experimental* plugin for authoring graph-based conversation trees",
+  "mods": [
+   {
+    "name": "CommonConversationRuntime",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "CommonConversationGraph",
+    "type": "UncookedOnly",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "CommonConversationEditor",
+    "type": "Editor",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Experimental\\CommonConversation\\CommonConversation.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 8,
+  "name": "GameFeatures",
+  "en": true,
+  "src": "Engine",
+  "cat": "Gameplay",
+  "desc": "Support for modular Game Feature Plugins",
+  "mods": [
+   {
+    "name": "GameFeatures",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "GameFeaturesEditor",
+    "type": "Editor",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\GameFeatures\\GameFeatures.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Source\\LyraGame.Target.cs",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ],
+   [
+    "Source\\LyraGame\\GameFeatures\\GameFeatureAction_AddAbilities.cpp",
+    1
+   ],
+   [
+    "Source\\LyraGame\\GameFeatures\\GameFeatureAction_AddGameplayCuePath.cpp",
+    1
+   ],
+   [
+    "Source\\LyraGame\\GameFeatures\\GameFeatureAction_AddInputBinding.cpp",
+    1
+   ],
+   [
+    "Source\\LyraGame\\GameFeatures\\GameFeatureAction_AddInputContextMapping.cpp",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 9,
+  "name": "ModularGameplay",
+  "en": true,
+  "src": "Engine",
+  "cat": "Gameplay",
+  "desc": "Base classes and subsystems to support modular use of the gameplay framework",
+  "mods": [
+   {
+    "name": "ModularGameplay",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\ModularGameplay\\ModularGameplay.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\ShooterCore.uplugin",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\Source\\ShooterCoreRuntime\\ShooterCoreRuntime.Build.cs",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterTests\\Source\\ShooterTestsRuntime\\ShooterTestsRuntime.Build.cs",
+    1
+   ],
+   [
+    "Plugins\\ModularGameplayActors\\ModularGameplayActors.uplugin",
+    1
+   ],
+   [
+    "Plugins\\ModularGameplayActors\\Source\\ModularGameplayActors\\ModularGameplayActors.Build.cs",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 10,
+  "name": "EnhancedInput",
+  "en": true,
+  "src": "Engine",
+  "cat": "Input",
+  "desc": "Input handling that allows for contextual and dynamic mappings.",
+  "mods": [
+   {
+    "name": "EnhancedInput",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "InputBlueprintNodes",
+    "type": "UncookedOnly",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "InputEditor",
+    "type": "Editor",
+    "phase": "Default"
+   }
+  ],
+  "ebd": true,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\EnhancedInput\\EnhancedInput.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\ShooterCore.uplugin",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\Source\\ShooterCoreRuntime\\ShooterCoreRuntime.Build.cs",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 11,
+  "name": "WinDualShock",
+  "en": true,
+  "src": "Engine",
+  "cat": "Input Devices",
+  "desc": "InputDevice plugin for the PS4 DualShock controller in Windows",
+  "mods": [
+   {
+    "name": "WinDualShock",
+    "type": "RuntimeNoCommandlet",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\Windows\\WinDualShock\\WinDualShock.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 12,
+  "name": "Volumetrics",
+  "en": true,
+  "src": "Engine",
+  "cat": "Rendering",
+  "desc": "A library of volume creation and rendering tools using Blueprints.",
+  "mods": [],
+  "ebd": "",
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Experimental\\Volumetrics\\Volumetrics.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 13,
+  "name": "DataRegistry",
+  "en": true,
+  "src": "Engine",
+  "cat": "Gameplay",
+  "desc": "Adds Data Registry system that can be used as a generic interface for acquiring structure data from multiple sources at runtime",
+  "mods": [
+   {
+    "name": "DataRegistry",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "DataRegistryEditor",
+    "type": "UncookedOnly",
+    "phase": "PreDefault"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\DataRegistry\\DataRegistry.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\Source\\ShooterCoreRuntime\\ShooterCoreRuntime.Build.cs",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 14,
+  "name": "ReplicationGraph",
+  "en": true,
+  "src": "Engine",
+  "cat": "Performance",
+  "desc": "The Replication Graph plugin provides a Replication Driver implementation designed for a large number of actors and connections by mainting persistent replicated actor lists in a graph structure.",
+  "mods": [
+   {
+    "name": "ReplicationGraph",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\ReplicationGraph\\ReplicationGraph.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 15,
+  "name": "SignificanceManager",
+  "en": true,
+  "src": "Engine",
+  "cat": "Performance",
+  "desc": "The significance manager plugin provides an extensible framework for allowing games to calculate the significance of an object and change behavior in response.",
+  "mods": [
+   {
+    "name": "SignificanceManager",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\SignificanceManager\\SignificanceManager.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 16,
+  "name": "Niagara",
+  "en": true,
+  "src": "Engine",
+  "cat": "FX",
+  "desc": "Niagara effect systems.",
+  "mods": [
+   {
+    "name": "NiagaraCore",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "Niagara",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "NiagaraAnimNotifies",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "NiagaraShader",
+    "type": "Runtime",
+    "phase": "PostConfigInit"
+   },
+   {
+    "name": "NiagaraVertexFactories",
+    "type": "Runtime",
+    "phase": "PostConfigInit"
+   },
+   {
+    "name": "NiagaraBlueprintNodes",
+    "type": "UncookedOnly",
+    "phase": "Default"
+   },
+   {
+    "name": "NiagaraEditor",
+    "type": "Editor",
+    "phase": "Default"
+   },
+   {
+    "name": "NiagaraEditorWidgets",
+    "type": "Editor",
+    "phase": "Default"
+   }
+  ],
+  "ebd": true,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\FX\\Niagara\\Niagara.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\TopDownArena\\TopDownArena.uplugin",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\TopDownArena\\Source\\TopDownArenaRuntime\\TopDownArenaRuntime.Build.cs",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 17,
+  "name": "Water",
+  "en": true,
+  "src": "Engine",
+  "cat": "Water",
+  "desc": "Full suite of water tools and rendering techniques to easily add oceans, river, lakes or custom water bodies that carve landscape and interacts with gameplay",
+  "mods": [
+   {
+    "name": "Water",
+    "type": "Runtime",
+    "phase": "PostConfigInit"
+   },
+   {
+    "name": "WaterEditor",
+    "type": "Editor",
+    "phase": "PostEngineInit"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Experimental\\Water\\Water.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 18,
+  "name": "CommonUI",
+  "en": true,
+  "src": "Engine",
+  "cat": "UI",
+  "desc": "A repository for game independent UI elements.",
+  "mods": [
+   {
+    "name": "CommonUI",
+    "type": "Runtime",
+    "phase": "Default"
+   },
+   {
+    "name": "CommonUIEditor",
+    "type": "Editor",
+    "phase": "Default"
+   },
+   {
+    "name": "CommonInput",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\CommonUI\\CommonUI.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\CommonGame\\CommonGame.uplugin",
+    1
+   ],
+   [
+    "Plugins\\CommonGame\\Source\\CommonGame.Build.cs",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\ShooterCore.uplugin",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\Source\\ShooterCoreRuntime\\ShooterCoreRuntime.Build.cs",
+    1
+   ],
+   [
+    "Plugins\\GameSettings\\GameSettings.uplugin",
+    1
+   ],
+   [
+    "Plugins\\GameSettings\\Source\\GameSettings.Build.cs",
+    1
+   ],
+   [
+    "Plugins\\UIExtension\\UIExtension.uplugin",
+    1
+   ],
+   [
+    "Plugins\\UIExtension\\Source\\UIExtension.Build.cs",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 19,
+  "name": "ControlFlows",
+  "en": true,
+  "src": "Engine",
+  "cat": "Other",
+  "desc": "Tool to cleanly implement Asynchronous Operations",
+  "mods": [
+   {
+    "name": "ControlFlows",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": "",
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Experimental\\ControlFlows\\ControlFlows.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 20,
+  "name": "Metasound",
+  "en": true,
+  "src": "Engine",
+  "cat": "Audio",
+  "desc": "A high-performance audio system that enables sound designers to have complete control over audio DSP graph generation of sound sources, via sample-accurate control and modulation of sound using audio parameters and audio events from game data and Blueprints",
+  "mods": [
+   {
+    "name": "MetasoundGraphCore",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "MetasoundGenerator",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "MetasoundFrontend",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "MetasoundStandardNodes",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "MetasoundEngine",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "MetasoundEngineTest",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "MetasoundEditor",
+    "type": "UncookedOnly",
+    "phase": "PreDefault"
+   }
+  ],
+  "ebd": true,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\Metasound\\Metasound.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 21,
+  "name": "MagicLeap",
+  "en": false,
+  "src": "MISSING",
+  "cat": "",
+  "desc": "",
+  "mods": [],
+  "ebd": "",
+  "path": "",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 22,
+  "name": "MagicLeapMedia",
+  "en": false,
+  "src": "MISSING",
+  "cat": "",
+  "desc": "",
+  "mods": [],
+  "ebd": "",
+  "path": "",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 23,
+  "name": "MagicLeapPassableWorld",
+  "en": false,
+  "src": "MISSING",
+  "cat": "",
+  "desc": "",
+  "mods": [],
+  "ebd": "",
+  "path": "",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 24,
+  "name": "OpenXREyeTracker",
+  "en": false,
+  "src": "Engine",
+  "cat": "Virtual Reality",
+  "desc": "OpenXR Eye Tracker provides XR_EXT_eye_gaze_interaction support.",
+  "mods": [
+   {
+    "name": "OpenXREyeTracker",
+    "type": "Runtime",
+    "phase": "PostConfigInit"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\OpenXREyeTracker\\OpenXREyeTracker.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 25,
+  "name": "OpenXRHandTracking",
+  "en": false,
+  "src": "Engine",
+  "cat": "Virtual Reality",
+  "desc": "OpenXR Hand Tracking provides XR_EXT_hand_tracking support.",
+  "mods": [
+   {
+    "name": "OpenXRHandTracking",
+    "type": "Runtime",
+    "phase": "PostConfigInit"
+   },
+   {
+    "name": "OpenXRHandTrackingEditor",
+    "type": "Editor",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\OpenXRHandTracking\\OpenXRHandTracking.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 26,
+  "name": "OpenXRHMD",
+  "en": false,
+  "src": "MISSING",
+  "cat": "",
+  "desc": "",
+  "mods": [],
+  "ebd": "",
+  "path": "",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 27,
+  "name": "SteamVR",
+  "en": false,
+  "src": "MISSING",
+  "cat": "",
+  "desc": "",
+  "mods": [],
+  "ebd": "",
+  "path": "",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 28,
+  "name": "GearVR",
+  "en": false,
+  "src": "MISSING",
+  "cat": "",
+  "desc": "",
+  "mods": [],
+  "ebd": "",
+  "path": "",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 29,
+  "name": "LuminPlatformFeatures",
+  "en": false,
+  "src": "MISSING",
+  "cat": "",
+  "desc": "",
+  "mods": [],
+  "ebd": "",
+  "path": "",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 30,
+  "name": "MLSDK",
+  "en": false,
+  "src": "MISSING",
+  "cat": "",
+  "desc": "",
+  "mods": [],
+  "ebd": "",
+  "path": "",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 31,
+  "name": "OnlineFramework",
+  "en": true,
+  "src": "Engine",
+  "cat": "Online Platform",
+  "desc": "Shared code for interacting with online gameplay services.",
+  "mods": [
+   {
+    "name": "Qos",
+    "type": "Runtime",
+    "phase": null
+   },
+   {
+    "name": "Party",
+    "type": "Runtime",
+    "phase": null
+   },
+   {
+    "name": "Lobby",
+    "type": "Runtime",
+    "phase": null
+   },
+   {
+    "name": "PatchCheck",
+    "type": "Runtime",
+    "phase": null
+   },
+   {
+    "name": "Hotfix",
+    "type": "Runtime",
+    "phase": null
+   },
+   {
+    "name": "Rejoin",
+    "type": "Runtime",
+    "phase": null
+   },
+   {
+    "name": "PlayTimeLimit",
+    "type": "Runtime",
+    "phase": null
+   },
+   {
+    "name": "LoginFlow",
+    "type": "ClientOnly",
+    "phase": null
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Online\\OnlineFramework\\OnlineFramework.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\CommonGame\\CommonGame.uplugin",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 32,
+  "name": "PlayFabParty",
+  "en": true,
+  "src": "MISSING",
+  "cat": "",
+  "desc": "",
+  "mods": [],
+  "ebd": "",
+  "path": "",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 33,
+  "name": "OnlineSubsystemEOS",
+  "en": true,
+  "src": "Engine",
+  "cat": "Online Platform",
+  "desc": "Online Subsystem for Epic Online Services",
+  "mods": [
+   {
+    "name": "OnlineSubsystemEOS",
+    "type": "Runtime",
+    "phase": "Default"
+   },
+   {
+    "name": "OnlineSubsystemEOSPlus",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Online\\OnlineSubsystemEOS\\OnlineSubsystemEOS.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 34,
+  "name": "OnlineServicesEOS",
+  "en": true,
+  "src": "Engine",
+  "cat": "Online Platform",
+  "desc": "Online Services implementation for EOS Account and Game services.",
+  "mods": [
+   {
+    "name": "OnlineServicesEOS",
+    "type": "Runtime",
+    "phase": "PostConfigInit"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Online\\OnlineServicesEOS\\OnlineServicesEOS.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 35,
+  "name": "OnlineServicesNull",
+  "en": true,
+  "src": "Engine",
+  "cat": "Online Platform",
+  "desc": "Online Services implementation without an external service.",
+  "mods": [
+   {
+    "name": "OnlineServicesNull",
+    "type": "Runtime",
+    "phase": "PostConfigInit"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Online\\OnlineServicesNull\\OnlineServicesNull.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 36,
+  "name": "OnlineServicesOSSAdapter",
+  "en": true,
+  "src": "Engine",
+  "cat": "Online Platform",
+  "desc": "Online Services adapter for Online Subsystem implementations.",
+  "mods": [
+   {
+    "name": "OnlineServicesOSSAdapter",
+    "type": "Runtime",
+    "phase": "PostConfigInit"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Online\\OnlineServicesOSSAdapter\\OnlineServicesOSSAdapter.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 37,
+  "name": "OnlineSubsystemSteam",
+  "en": true,
+  "src": "Engine",
+  "cat": "Online Platform",
+  "desc": "Access to Steam platform",
+  "mods": [
+   {
+    "name": "OnlineSubsystemSteam",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Online\\OnlineSubsystemSteam\\OnlineSubsystemSteam.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 38,
+  "name": "SteamSockets",
+  "en": true,
+  "src": "Engine",
+  "cat": "Networking",
+  "desc": "New Steamworks Networking code that supports the SteamSockets interface. NOTE: This plugin is only compatible with the SteamSockets Netdriver. It will not work if the proper netdriver definitions have not been set.",
+  "mods": [
+   {
+    "name": "SteamSockets",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\Steam\\SteamSockets\\SteamSockets.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 39,
+  "name": "CommonLoadingScreen",
+  "en": true,
+  "src": "Project",
+  "cat": "Gameplay",
+  "desc": "Loading screen manager handling creation and display of a project-specified loading screen widget",
+  "mods": [
+   {
+    "name": "CommonLoadingScreen",
+    "type": "Runtime",
+    "phase": "Default"
+   },
+   {
+    "name": "CommonStartupLoadingScreen",
+    "type": "ClientOnly",
+    "phase": "PreLoadingScreen"
+   }
+  ],
+  "ebd": "",
+  "path": "E:\\ue5\\game_design\\code\\Tenkaichi\\Plugins\\CommonLoadingScreen\\CommonLoadingScreen.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\CommonLoadingScreen\\CommonLoadingScreen.uplugin",
+    2
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 40,
+  "name": "ModularGameplayActors",
+  "en": true,
+  "src": "Project",
+  "cat": "Gameplay",
+  "desc": "Base classes designed to be used with the Modular Gameplay plugin.",
+  "mods": [
+   {
+    "name": "ModularGameplayActors",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": true,
+  "path": "E:\\ue5\\game_design\\code\\Tenkaichi\\Plugins\\ModularGameplayActors\\ModularGameplayActors.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\CommonGame\\CommonGame.uplugin",
+    1
+   ],
+   [
+    "Plugins\\CommonGame\\Source\\CommonGame.Build.cs",
+    1
+   ],
+   [
+    "Plugins\\ModularGameplayActors\\ModularGameplayActors.uplugin",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 41,
+  "name": "GameSettings",
+  "en": true,
+  "src": "Project",
+  "cat": "UI",
+  "desc": "System for defining game-specific settings and exposing them to the UI.",
+  "mods": [
+   {
+    "name": "GameSettings",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": "",
+  "path": "E:\\ue5\\game_design\\code\\Tenkaichi\\Plugins\\GameSettings\\GameSettings.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\GameSettings\\GameSettings.uplugin",
+    2
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 42,
+  "name": "CommonUser",
+  "en": true,
+  "src": "Project",
+  "cat": "Gameplay",
+  "desc": "Provides gameplay code and blueprint wrappers for online and platform operations.",
+  "mods": [
+   {
+    "name": "CommonUser",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": "",
+  "path": "E:\\ue5\\game_design\\code\\Tenkaichi\\Plugins\\CommonUser\\CommonUser.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\CommonGame\\CommonGame.uplugin",
+    1
+   ],
+   [
+    "Plugins\\CommonGame\\Source\\CommonGame.Build.cs",
+    1
+   ],
+   [
+    "Plugins\\CommonUser\\CommonUser.uplugin",
+    2
+   ],
+   [
+    "Plugins\\CommonUser\\Source\\CommonUser\\Private\\AsyncAction_CommonUserInitialize.cpp",
+    1
+   ],
+   [
+    "Plugins\\CommonUser\\Source\\CommonUser\\Private\\CommonSessionSubsystem.cpp",
+    1
+   ],
+   [
+    "Plugins\\CommonUser\\Source\\CommonUser\\Private\\CommonUserSubsystem.cpp",
+    23
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 43,
+  "name": "CommonGame",
+  "en": true,
+  "src": "Project",
+  "cat": "Gameplay",
+  "desc": "Generic gameplay classes that use the other Common plugins.",
+  "mods": [
+   {
+    "name": "CommonGame",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": "",
+  "path": "E:\\ue5\\game_design\\code\\Tenkaichi\\Plugins\\CommonGame\\CommonGame.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\CommonGame\\CommonGame.uplugin",
+    2
+   ],
+   [
+    "Plugins\\CommonGame\\Source\\Private\\CommonGameInstance.cpp",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\ShooterCore.uplugin",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\Source\\ShooterCoreRuntime\\ShooterCoreRuntime.Build.cs",
+    1
+   ],
+   [
+    "Plugins\\UIExtension\\UIExtension.uplugin",
+    1
+   ],
+   [
+    "Plugins\\UIExtension\\Source\\UIExtension.Build.cs",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 44,
+  "name": "GameSubtitles",
+  "en": true,
+  "src": "Project",
+  "cat": "UI",
+  "desc": "Game support for playing subtitles attached to media player assets.",
+  "mods": [
+   {
+    "name": "GameSubtitles",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "E:\\ue5\\game_design\\code\\Tenkaichi\\Plugins\\GameSubtitles\\GameSubtitles.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\ShooterCore.uplugin",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\Source\\ShooterCoreRuntime\\ShooterCoreRuntime.Build.cs",
+    1
+   ],
+   [
+    "Plugins\\GameSubtitles\\GameSubtitles.uplugin",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 45,
+  "name": "UIExtension",
+  "en": true,
+  "src": "Project",
+  "cat": "UI",
+  "desc": "A subsystem that allows extending UI elements in a modular way.",
+  "mods": [
+   {
+    "name": "UIExtension",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "E:\\ue5\\game_design\\code\\Tenkaichi\\Plugins\\UIExtension\\UIExtension.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\UIExtension\\UIExtension.uplugin",
+    2
+   ],
+   [
+    "Plugins\\UIExtension\\Source\\Private\\Widgets\\UIExtensionPointWidget.cpp",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 46,
+  "name": "AsyncMixin",
+  "en": true,
+  "src": "Project",
+  "cat": "UI",
+  "desc": "C++ utility class for managing asynchronous operations like loading.",
+  "mods": [
+   {
+    "name": "AsyncMixin",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "E:\\ue5\\game_design\\code\\Tenkaichi\\Plugins\\AsyncMixin\\AsyncMixin.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\AsyncMixin\\AsyncMixin.uplugin",
+    2
+   ],
+   [
+    "Plugins\\AsyncMixin\\Source\\Private\\AsyncMixin.cpp",
+    2
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\ShooterCore.uplugin",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\Source\\ShooterCoreRuntime\\ShooterCoreRuntime.Build.cs",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 47,
+  "name": "GameplayMessageRouter",
+  "en": true,
+  "src": "Project",
+  "cat": "Gameplay",
+  "desc": "A subsystem that allows registering for and sending messages between unconnected gameplay objects.",
+  "mods": [
+   {
+    "name": "GameplayMessageRuntime",
+    "type": "Runtime",
+    "phase": "Default"
+   },
+   {
+    "name": "GameplayMessageNodes",
+    "type": "UncookedOnly",
+    "phase": "Default"
+   }
+  ],
+  "ebd": true,
+  "path": "E:\\ue5\\game_design\\code\\Tenkaichi\\Plugins\\GameplayMessageRouter\\GameplayMessageRouter.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Plugins\\GameFeatures\\ShooterCore\\ShooterCore.uplugin",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 48,
+  "name": "AssetReferenceRestrictions",
+  "en": true,
+  "src": "Engine",
+  "cat": "Editor",
+  "desc": "Apply project-specific restrictions to how content in different folders or plugins can be referenced",
+  "mods": [
+   {
+    "name": "AssetReferenceRestrictions",
+    "type": "Editor",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Editor\\AssetReferenceRestrictions\\AssetReferenceRestrictions.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 49,
+  "name": "ModelingToolsEditorMode",
+  "en": true,
+  "src": "Engine",
+  "cat": "Editor",
+  "desc": "Modeling Tools Mode includes a suite of interactive tools for creating and editing meshes in the Editor",
+  "mods": [
+   {
+    "name": "ModelingToolsEditorMode",
+    "type": "Editor",
+    "phase": "Default"
+   }
+  ],
+  "ebd": "",
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Editor\\ModelingToolsEditorMode\\ModelingToolsEditorMode.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 50,
+  "name": "GeometryScripting",
+  "en": true,
+  "src": "Engine",
+  "cat": "Geometry",
+  "desc": "Geometry Script provides a library of functions for creating and editing Meshes in Blueprints and Python",
+  "mods": [
+   {
+    "name": "GeometryScriptingCore",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "GeometryScriptingEditor",
+    "type": "Editor",
+    "phase": "Default"
+   }
+  ],
+  "ebd": "",
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\GeometryScripting\\GeometryScripting.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 51,
+  "name": "AnimationLocomotionLibrary",
+  "en": true,
+  "src": "Engine",
+  "cat": "Animation",
+  "desc": "Collection of techniques for driving locomotion animations",
+  "mods": [
+   {
+    "name": "AnimationLocomotionLibraryRuntime",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "AnimationLocomotionLibraryEditor",
+    "type": "UncookedOnly",
+    "phase": "PreDefault"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Animation\\AnimationLocomotionLibrary\\AnimationLocomotionLibrary.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 52,
+  "name": "AudioModulation",
+  "en": true,
+  "src": "Engine",
+  "cat": "Audio",
+  "desc": "Default implementation of Audio Modulation in the Unreal Audio Engine.",
+  "mods": [
+   {
+    "name": "AudioModulation",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "AudioModulationEditor",
+    "type": "Editor",
+    "phase": "PostEngineInit"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\AudioModulation\\AudioModulation.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ],
+   [
+    "Source\\LyraGame\\LyraGame.Build.cs",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 53,
+  "name": "AudioGameplayVolume",
+  "en": true,
+  "src": "Engine",
+  "cat": "Audio",
+  "desc": "Audio Gameplay Volume Plugin",
+  "mods": [
+   {
+    "name": "AudioGameplayVolume",
+    "type": "Runtime",
+    "phase": "Default"
+   },
+   {
+    "name": "AudioGameplayVolumeEditor",
+    "type": "Editor",
+    "phase": "PostEngineInit"
+   }
+  ],
+  "ebd": "",
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\AudioGameplayVolume\\AudioGameplayVolume.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 54,
+  "name": "AudioGameplay",
+  "en": true,
+  "src": "Engine",
+  "cat": "Audio",
+  "desc": "Core plugin for audio gameplay",
+  "mods": [
+   {
+    "name": "AudioGameplay",
+    "type": "Runtime",
+    "phase": "Default"
+   },
+   {
+    "name": "AudioGameplayTests",
+    "type": "Editor",
+    "phase": "Default"
+   }
+  ],
+  "ebd": "",
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\AudioGameplay\\AudioGameplay.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 55,
+  "name": "SoundUtilities",
+  "en": true,
+  "src": "Engine",
+  "cat": "Audio",
+  "desc": "A variety of BP functions, objects, and utilities for audio.",
+  "mods": [
+   {
+    "name": "SoundUtilities",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "SoundUtilitiesEditor",
+    "type": "Editor",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\SoundUtilities\\SoundUtilities.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 56,
+  "name": "AnimationWarping",
+  "en": true,
+  "src": "Engine",
+  "cat": "Animation",
+  "desc": "Framework for animation and pose warping. This plugin includes Stride, Orientation, and Slope Warping alongside the Root Motion Delta animation attribute.",
+  "mods": [
+   {
+    "name": "AnimationWarpingRuntime",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "AnimationWarpingEditor",
+    "type": "UncookedOnly",
+    "phase": "PreDefault"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Animation\\AnimationWarping\\AnimationWarping.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 57,
+  "name": "MovieRenderPipeline",
+  "en": true,
+  "src": "Engine",
+  "cat": "Rendering",
+  "desc": "Advanced movie rendering pipeline for use in creating rendered cinematics or other multi-media creation.",
+  "mods": [
+   {
+    "name": "MovieRenderPipelineCore",
+    "type": "Runtime",
+    "phase": "Default"
+   },
+   {
+    "name": "MovieRenderPipelineSettings",
+    "type": "Runtime",
+    "phase": "Default"
+   },
+   {
+    "name": "MovieRenderPipelineRenderPasses",
+    "type": "Runtime",
+    "phase": "Default"
+   },
+   {
+    "name": "MovieRenderPipelineEditor",
+    "type": "Editor",
+    "phase": "Default"
+   },
+   {
+    "name": "UEOpenExrRTTI",
+    "type": "Runtime",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\MovieScene\\MovieRenderPipeline\\MovieRenderPipeline.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 58,
+  "name": "MoviePipelineMaskRenderPass",
+  "en": true,
+  "src": "Engine",
+  "cat": "Rendering",
+  "desc": "Additional render passes for the Movie Render Queue. This currently includes the ObjectId pass (Editor Only) which generates object mattes with some limitations (using the Cryptomatte specification), and a Panoramic pass with better Sequencer integration than the Panoramic Capture plugin.",
+  "mods": [
+   {
+    "name": "MoviePipelineMaskRenderPass",
+    "type": "UncookedOnly",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\MovieScene\\MoviePipelineMaskRenderPass\\MoviePipelineMaskRenderPass.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 59,
+  "name": "AssetSearch",
+  "en": true,
+  "src": "Engine",
+  "cat": "Editor",
+  "desc": "",
+  "mods": [
+   {
+    "name": "AssetSearch",
+    "type": "EditorNoCommandlet",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Editor\\AssetSearch\\AssetSearch.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 60,
+  "name": "GameplayInsights",
+  "en": true,
+  "src": "Engine",
+  "cat": "Insights",
+  "desc": "Allows debugging of animation systems via Unreal Insights",
+  "mods": [
+   {
+    "name": "GameplayInsights",
+    "type": "EditorAndProgram",
+    "phase": "Default"
+   },
+   {
+    "name": "GameplayInsightsEditor",
+    "type": "Editor",
+    "phase": "Default"
+   },
+   {
+    "name": "RewindDebugger",
+    "type": "Editor",
+    "phase": "Default"
+   },
+   {
+    "name": "RewindDebuggerVLog",
+    "type": "Editor",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Animation\\GameplayInsights\\GameplayInsights.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 61,
+  "name": "ResonanceAudio",
+  "en": false,
+  "src": "Engine",
+  "cat": "Audio",
+  "desc": "3D audio spatialization and room acoustics simulation plugin by Google.",
+  "mods": [
+   {
+    "name": "ResonanceAudio",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "ResonanceAudioEditor",
+    "type": "Editor",
+    "phase": "PostEngineInit"
+   }
+  ],
+  "ebd": true,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\ResonanceAudio\\ResonanceAudio.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 62,
+  "name": "RuntimePhysXCooking",
+  "en": false,
+  "src": "MISSING",
+  "cat": "",
+  "desc": "",
+  "mods": [],
+  "ebd": "",
+  "path": "",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 63,
+  "name": "Spatialization",
+  "en": true,
+  "src": "Engine",
+  "cat": "Audio",
+  "desc": "Plugin featuring a variety of basic audio spatialization solutions.",
+  "mods": [
+   {
+    "name": "Spatialization",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "SpatializationEditor",
+    "type": "Editor",
+    "phase": "PostEngineInit"
+   }
+  ],
+  "ebd": "",
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\Spatialization\\Spatialization.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 64,
+  "name": "FunctionalTestingEditor",
+  "en": true,
+  "src": "Engine",
+  "cat": "Testing",
+  "desc": "",
+  "mods": [
+   {
+    "name": "FunctionalTestingEditor",
+    "type": "Editor",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Tests\\FunctionalTestingEditor\\FunctionalTestingEditor.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 65,
+  "name": "GameplayInteractions",
+  "en": true,
+  "src": "Engine",
+  "cat": "Gameplay",
+  "desc": "Player and NPC interactions",
+  "mods": [
+   {
+    "name": "GameplayInteractionsModule",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\GameplayInteractions\\GameplayInteractions.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 66,
+  "name": "SmartObjects",
+  "en": true,
+  "src": "Engine",
+  "cat": "Gameplay",
+  "desc": "Support for ambient life populating the game world",
+  "mods": [
+   {
+    "name": "SmartObjectsModule",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "SmartObjectsTestSuite",
+    "type": "UncookedOnly",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "SmartObjectsEditorModule",
+    "type": "Editor",
+    "phase": "PostEngineInit"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\SmartObjects\\SmartObjects.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 67,
+  "name": "ContextualAnimation",
+  "en": true,
+  "src": "Engine",
+  "cat": "Animation",
+  "desc": "",
+  "mods": [
+   {
+    "name": "ContextualAnimation",
+    "type": "Runtime",
+    "phase": "Default"
+   },
+   {
+    "name": "ContextualAnimationEditor",
+    "type": "Editor",
+    "phase": "Default"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Experimental\\Animation\\ContextualAnimation\\ContextualAnimation.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 68,
+  "name": "GameplayBehaviorSmartObjects",
+  "en": true,
+  "src": "Engine",
+  "cat": "Other",
+  "desc": "Plugins for SmartObjects using GameplayBehavior as their default runtime behavior",
+  "mods": [
+   {
+    "name": "GameplayBehaviorSmartObjectsModule",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   }
+  ],
+  "ebd": "",
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\GameplayBehaviorSmartObjects\\GameplayBehaviorSmartObjects.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 69,
+  "name": "GameplayStateTree",
+  "en": true,
+  "src": "Engine",
+  "cat": "Gameplay",
+  "desc": "StateTree for AI/Gameplay Behaviors",
+  "mods": [
+   {
+    "name": "GameplayStateTreeModule",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Runtime\\GameplayStateTree\\GameplayStateTree.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ },
+ {
+  "idx": 70,
+  "name": "GameplayBehaviors",
+  "en": true,
+  "src": "Engine",
+  "cat": "Gameplay",
+  "desc": "Encapsulated fire-and-forget behaviors for AI agents",
+  "mods": [
+   {
+    "name": "GameplayBehaviorsModule",
+    "type": "Runtime",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "GameplayBehaviorsModule",
+    "type": "UncookedOnly",
+    "phase": "PreDefault"
+   },
+   {
+    "name": "GameplayBehaviorsEditorModule",
+    "type": "Editor",
+    "phase": "PostEngineInit"
+   }
+  ],
+  "ebd": false,
+  "path": "D:\\ue5\\Epic Games\\UE_5.4\\Engine\\Plugins\\Experimental\\GameplayBehaviors\\GameplayBehaviors.uplugin",
+  "lyra": [
+   [
+    "LyraStarterGame.uproject",
+    1
+   ]
+  ]
+ }
+]

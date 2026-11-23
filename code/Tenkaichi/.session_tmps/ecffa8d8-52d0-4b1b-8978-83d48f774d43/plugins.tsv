@@ -1,0 +1,70 @@
+1|ActorPalette|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Experimental\ActorPalette\ActorPalette.uplugin
+2|AESGCMHandlerComponent|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\PacketHandlers\AESGCMHandlerComponent\AESGCMHandlerComponent.uplugin
+3|DTLSHandlerComponent|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\PacketHandlers\DTLSHandlerComponent\DTLSHandlerComponent.uplugin
+4|GameplayAbilities|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\GameplayAbilities\GameplayAbilities.uplugin
+5|Gauntlet|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Experimental\Gauntlet\Gauntlet.uplugin
+6|D3DExternalGPUStatistics|True|MISSING||||
+7|CommonConversation|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Experimental\CommonConversation\CommonConversation.uplugin
+8|GameFeatures|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\GameFeatures\GameFeatures.uplugin
+9|ModularGameplay|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\ModularGameplay\ModularGameplay.uplugin
+10|EnhancedInput|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\EnhancedInput\EnhancedInput.uplugin
+11|WinDualShock|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\Windows\WinDualShock\WinDualShock.uplugin
+12|Volumetrics|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Experimental\Volumetrics\Volumetrics.uplugin
+13|DataRegistry|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\DataRegistry\DataRegistry.uplugin
+14|ReplicationGraph|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\ReplicationGraph\ReplicationGraph.uplugin
+15|SignificanceManager|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\SignificanceManager\SignificanceManager.uplugin
+16|Niagara|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\FX\Niagara\Niagara.uplugin
+17|Water|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Experimental\Water\Water.uplugin
+18|CommonUI|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\CommonUI\CommonUI.uplugin
+19|ControlFlows|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Experimental\ControlFlows\ControlFlows.uplugin
+20|Metasound|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\Metasound\Metasound.uplugin
+21|MagicLeap|False|MISSING||||
+22|MagicLeapMedia|False|MISSING||||
+23|MagicLeapPassableWorld|False|MISSING||||
+24|OpenXREyeTracker|False|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\OpenXREyeTracker\OpenXREyeTracker.uplugin
+25|OpenXRHandTracking|False|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\OpenXRHandTracking\OpenXRHandTracking.uplugin
+26|OpenXRHMD|False|MISSING||||
+27|SteamVR|False|MISSING||||
+28|GearVR|False|MISSING||||
+29|LuminPlatformFeatures|False|MISSING||||
+30|MLSDK|False|MISSING||||
+31|OnlineFramework|True|PARSEFAIL|||Invalid control character at: line 10 co|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Online\OnlineFramework\OnlineFramework.uplugin
+32|PlayFabParty|True|MISSING||||
+33|OnlineSubsystemEOS|True|PARSEFAIL|||Invalid control character at: line 10 co|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Online\OnlineSubsystemEOS\OnlineSubsystemEOS.uplugin
+34|OnlineServicesEOS|True|PARSEFAIL|||Invalid control character at: line 10 co|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Online\OnlineServicesEOS\OnlineServicesEOS.uplugin
+35|OnlineServicesNull|True|PARSEFAIL|||Invalid control character at: line 10 co|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Online\OnlineServicesNull\OnlineServicesNull.uplugin
+36|OnlineServicesOSSAdapter|True|PARSEFAIL|||Invalid control character at: line 10 co|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Online\OnlineServicesOSSAdapter\OnlineServicesOSSAdapter.uplugin
+37|OnlineSubsystemSteam|True|PARSEFAIL|||Invalid control character at: line 10 co|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Online\OnlineSubsystemSteam\OnlineSubsystemSteam.uplugin
+38|SteamSockets|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\Steam\SteamSockets\SteamSockets.uplugin
+39|CommonLoadingScreen|True|PARSEFAIL|||Invalid control character at: line 9 col|E:\ue5\game_design\code\Tenkaichi\Plugins\CommonLoadingScreen\CommonLoadingScreen.uplugin
+40|ModularGameplayActors|True|PARSEFAIL|||Invalid control character at: line 9 col|E:\ue5\game_design\code\Tenkaichi\Plugins\ModularGameplayActors\ModularGameplayActors.uplugin
+41|GameSettings|True|PARSEFAIL|||Invalid control character at: line 9 col|E:\ue5\game_design\code\Tenkaichi\Plugins\GameSettings\GameSettings.uplugin
+42|CommonUser|True|PARSEFAIL|||Invalid control character at: line 9 col|E:\ue5\game_design\code\Tenkaichi\Plugins\CommonUser\CommonUser.uplugin
+43|CommonGame|True|PARSEFAIL|||Invalid control character at: line 9 col|E:\ue5\game_design\code\Tenkaichi\Plugins\CommonGame\CommonGame.uplugin
+44|GameSubtitles|True|PARSEFAIL|||Invalid control character at: line 9 col|E:\ue5\game_design\code\Tenkaichi\Plugins\GameSubtitles\GameSubtitles.uplugin
+45|UIExtension|True|PARSEFAIL|||Invalid control character at: line 9 col|E:\ue5\game_design\code\Tenkaichi\Plugins\UIExtension\UIExtension.uplugin
+46|AsyncMixin|True|PARSEFAIL|||Invalid control character at: line 9 col|E:\ue5\game_design\code\Tenkaichi\Plugins\AsyncMixin\AsyncMixin.uplugin
+47|GameplayMessageRouter|True|PARSEFAIL|||Invalid control character at: line 9 col|E:\ue5\game_design\code\Tenkaichi\Plugins\GameplayMessageRouter\GameplayMessageRouter.uplugin
+48|AssetReferenceRestrictions|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Editor\AssetReferenceRestrictions\AssetReferenceRestrictions.uplugin
+49|ModelingToolsEditorMode|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Editor\ModelingToolsEditorMode\ModelingToolsEditorMode.uplugin
+50|GeometryScripting|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\GeometryScripting\GeometryScripting.uplugin
+51|AnimationLocomotionLibrary|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Animation\AnimationLocomotionLibrary\AnimationLocomotionLibrary.uplugin
+52|AudioModulation|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\AudioModulation\AudioModulation.uplugin
+53|AudioGameplayVolume|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\AudioGameplayVolume\AudioGameplayVolume.uplugin
+54|AudioGameplay|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\AudioGameplay\AudioGameplay.uplugin
+55|SoundUtilities|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\SoundUtilities\SoundUtilities.uplugin
+56|AnimationWarping|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Animation\AnimationWarping\AnimationWarping.uplugin
+57|MovieRenderPipeline|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\MovieScene\MovieRenderPipeline\MovieRenderPipeline.uplugin
+58|MoviePipelineMaskRenderPass|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\MovieScene\MoviePipelineMaskRenderPass\MoviePipelineMaskRenderPass.uplugin
+59|AssetSearch|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Editor\AssetSearch\AssetSearch.uplugin
+60|GameplayInsights|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Animation\GameplayInsights\GameplayInsights.uplugin
+61|ResonanceAudio|False|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\ResonanceAudio\ResonanceAudio.uplugin
+62|RuntimePhysXCooking|False|MISSING||||
+63|Spatialization|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\Spatialization\Spatialization.uplugin
+64|FunctionalTestingEditor|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Tests\FunctionalTestingEditor\FunctionalTestingEditor.uplugin
+65|GameplayInteractions|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\GameplayInteractions\GameplayInteractions.uplugin
+66|SmartObjects|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\SmartObjects\SmartObjects.uplugin
+67|ContextualAnimation|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Experimental\Animation\ContextualAnimation\ContextualAnimation.uplugin
+68|GameplayBehaviorSmartObjects|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\GameplayBehaviorSmartObjects\GameplayBehaviorSmartObjects.uplugin
+69|GameplayStateTree|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Runtime\GameplayStateTree\GameplayStateTree.uplugin
+70|GameplayBehaviors|True|PARSEFAIL|||Invalid control character at: line 9 col|D:\ue5\Epic Games\UE_5.4\Engine\Plugins\Experimental\GameplayBehaviors\GameplayBehaviors.uplugin

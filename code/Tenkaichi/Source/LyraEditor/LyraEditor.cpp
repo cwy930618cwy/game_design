@@ -1,9 +1,5 @@
-// 版权声明：Epic Games 保留所有权利
-//
-// 说明：LyraEditor 占位模块的实现文件（S00 阶段）。
-// 只提供一个空的默认模块实现，让 UBT / Rider 能解析到该模块。
-// S22 建正式编辑器模块时用 Lyra 原始 LyraEditor.cpp 替换本文件即可。
-
+// 引入模块管理头文件；IMPLEMENT_MODULE 宏与 FDefaultModuleImpl 都在这里
 #include "Modules/ModuleManager.h"
 
+// 注册普通模块；把实现类 FDefaultModuleImpl 与模块名 LyraEditor 绑定
 IMPLEMENT_MODULE(FDefaultModuleImpl, LyraEditor);

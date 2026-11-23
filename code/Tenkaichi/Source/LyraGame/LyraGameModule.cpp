@@ -1,4 +1,4 @@
-﻿// 版权声明：Epic Games 保留所有权利
+// 版权声明：Epic Games 保留所有权利
 
 // 引入模块管理头文件；FDefaultGameModuleImpl 和主模块宏都在这里
 #include "Modules/ModuleManager.h"
